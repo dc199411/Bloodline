@@ -1,0 +1,39 @@
+node_modules/
+.next/
+dist/
+out/
+.turbo/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Foundry
+packages/contracts/cache/
+packages/contracts/out/
+packages/contracts/lib/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+lcov.info
+
+# Docker
+*.log
+
+# Prisma
+apps/api/prisma/migrations/**/migration_lock.toml
+
+# Scanner
+scan-report.md

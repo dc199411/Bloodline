@@ -1,0 +1,156 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  walletAddress String    @unique
+  displayName   String?
+  avatarUrl     String?
+  createdAt     DateTime  @default(now())
+  lastSeenAt    DateTime?
+  agents        Agent[]
+}
+
+model Agent {
+  id                BigInt    @id @default(autoincrement())
+  agentId           BigInt    @unique
+  ownerId           String
+  owner             User      @relation(fields: [ownerId], references: [id])
+  name              String
+  description       String?
+  metadataUri       String?
+  executionEndpoint String?
+  modelProvider     String?
+  stage             String    @default("alive")
+  intelligence      Int
+  speed             Int
+  creativity        Int
+  frugality         Int
+  riskAppetite      Int
+  socialEnergy      Int
+  loyalty           Int
+  resilience        Int
+  parentAgentId     BigInt?
+  lineageDepth      Int       @default(0)
+  totalEarned       Decimal   @default(0) @db.Decimal(20, 6)
+  tasksCompleted    Int       @default(0)
+  offspringCount    Int       @default(0)
+  followerCount     Int       @default(0)
+  bornAt            DateTime?
+  diedAt            DateTime?
+  lastWillUri       String?
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  bscoreSnapshots   BScoreSnapshot[]
+  bountyApps        BountyApplication[]
+  childrenForked    Agent[]   @relation("ForkLineage")
+  parent            Agent?    @relation("ForkLineage", fields: [parentAgentId], references: [agentId])
+  ratings           AgentRating[]
+  posts             SocialPost[]
+
+  @@index([ownerId])
+  @@index([stage])
+  @@index([parentAgentId])
+}
+
+model BScoreSnapshot {
+  id             BigInt   @id @default(autoincrement())
+  agentId        BigInt
+  agent          Agent    @relation(fields: [agentId], references: [agentId])
+  composite      Decimal  @db.Decimal(20, 4)
+  taskScore      Decimal  @db.Decimal(10, 4)
+  profitScore    Decimal  @db.Decimal(10, 4)
+  accuracyScore  Decimal  @db.Decimal(10, 4)
+  arenaScore     Decimal  @db.Decimal(10, 4)
+  uptimeScore    Decimal  @db.Decimal(10, 4)
+  communityScore Decimal  @db.Decimal(10, 4)
+  snapshotBlock  BigInt?
+  createdAt      DateTime @default(now())
+
+  @@index([agentId])
+  @@index([createdAt])
+}
+
+model Bounty {
+  id              BigInt              @id @default(autoincrement())
+  bountyId        BigInt              @unique
+  posterAddress   String
+  posterAgentId   BigInt?
+  title           String
+  description     String?
+  descriptionUri  String?
+  bountyType      String
+  status          String              @default("open")
+  prizeAmount     Decimal             @db.Decimal(20, 6)
+  prizeToken      String              @default("USDC")
+  deadline        DateTime
+  minBScore       Int                 @default(0)
+  minIntelligence Int                 @default(0)
+  minCreativity   Int                 @default(0)
+  minSpeed        Int                 @default(0)
+  verifyMode      String              @default("human")
+  winnerAgentId   BigInt?
+  createdAt       DateTime            @default(now())
+  completedAt     DateTime?
+  applications    BountyApplication[]
+}
+
+model BountyApplication {
+  id        BigInt   @id @default(autoincrement())
+  bountyId  BigInt
+  bounty    Bounty   @relation(fields: [bountyId], references: [bountyId])
+  agentId   BigInt
+  agent     Agent    @relation(fields: [agentId], references: [agentId])
+  status    String   @default("pending")
+  outputUri String?
+  score     Decimal? @db.Decimal(10, 4)
+  createdAt DateTime @default(now())
+
+  @@unique([bountyId, agentId])
+  @@index([bountyId])
+  @@index([agentId])
+}
+
+model AgentRating {
+  id           BigInt   @id @default(autoincrement())
+  agentId      BigInt
+  agent        Agent    @relation(fields: [agentId], references: [agentId])
+  raterAddress String
+  overall      Int
+  taskQuality  Int
+  reliability  Int
+  signature    String
+  createdAt    DateTime @default(now())
+
+  @@unique([agentId, raterAddress])
+}
+
+model SocialPost {
+  id            BigInt   @id @default(autoincrement())
+  agentId       BigInt
+  agent         Agent    @relation(fields: [agentId], references: [agentId])
+  trigger       String
+  content       String   @db.Text
+  farcasterHash String?
+  twitterId     String?
+  postedAt      DateTime @default(now())
+
+  @@index([agentId])
+  @@index([trigger])
+}
+
+model Follow {
+  id              BigInt   @id @default(autoincrement())
+  followerAddress String
+  agentId         BigInt
+  createdAt       DateTime @default(now())
+
+  @@unique([followerAddress, agentId])
+  @@index([agentId])
+}
