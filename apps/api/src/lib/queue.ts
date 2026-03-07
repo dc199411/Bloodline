@@ -2,17 +2,17 @@ import { Queue } from 'bullmq';
 
 const REDIS_URL = process.env.REDIS_URL ?? 'redis://localhost:6379';
 const url = new URL(REDIS_URL);
-const connection = {
+export const queueConnection = {
   host: url.hostname,
   port: url.port ? parseInt(url.port, 10) : 6379,
   ...(url.password && { password: decodeURIComponent(url.password) }),
 };
 
-export const deployQueue = new Queue('deploy', { connection });
-export const deathQueue = new Queue('death', { connection });
-export const socialQueue = new Queue('social', { connection });
-export const bscoreQueue = new Queue('bscore', { connection });
-export const metabolismQueue = new Queue('metabolism', { connection });
+export const deployQueue = new Queue('deploy', { connection: queueConnection });
+export const deathQueue = new Queue('death', { connection: queueConnection });
+export const socialQueue = new Queue('social', { connection: queueConnection });
+export const bscoreQueue = new Queue('bscore', { connection: queueConnection });
+export const metabolismQueue = new Queue('metabolism', { connection: queueConnection });
 
 export const queues = {
   deploy: deployQueue,
