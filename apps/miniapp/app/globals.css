@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800;900&display=swap');
+
+:root {
+  --blood: #FF1A1A;
+  --deep: #080808;
+  --carbon: #101010;
+  --ash: #1A1A1A;
+  --panel: #141414;
+  --border: #222222;
+  --bone: #E8E0D5;
+  --muted: #555555;
+  --live: #00FF87;
+  --dying: #FF6B00;
+  --gold: #FFD700;
+  --blue: #4FC3F7;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--deep);
+  color: var(--bone);
+  max-width: 430px;
+  margin: 0 auto;
+  font-family: 'Space Mono', monospace;
+  min-height: 100dvh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.06;
+  pointer-events: none;
+  z-index: 0;
+}
+
+:active {
+  opacity: 0.7;
+  transition: opacity 0.1s;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--deep);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px currentColor; }
+  50% { box-shadow: 0 0 20px currentColor; }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-blink {
+  animation: blink 1.5s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-fade-up {
+  animation: fade-up 0.4s ease-out both;
+}
+
+.stage-alive { color: var(--live); }
+.stage-thriving { color: var(--gold); }
+.stage-danger { color: var(--dying); }
+.stage-dead { color: var(--muted); }
+.stage-ascended { color: var(--blood); }
+
+.glow-alive { text-shadow: 0 0 12px var(--live); }
+.glow-thriving { text-shadow: 0 0 12px var(--gold); }
+.glow-danger { text-shadow: 0 0 12px var(--dying); }
+.glow-dead { text-shadow: none; }
+.glow-ascended { text-shadow: 0 0 12px var(--blood); }
