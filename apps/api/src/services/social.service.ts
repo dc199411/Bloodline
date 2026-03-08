@@ -4,6 +4,7 @@ import { generateText } from '../lib/llm';
 import {
   buildPersonalityVoice,
   getDominantTrait,
+  extractDNA,
   type DNA,
   type SocialTrigger,
 } from '@bloodline/shared';
@@ -63,16 +64,7 @@ export async function publishPost(
   const agent = await prisma.agent.findUnique({ where: { agentId } });
   if (!agent) throw new Error('Agent not found');
 
-  const dna: DNA = {
-    intelligence: agent.intelligence,
-    speed: agent.speed,
-    creativity: agent.creativity,
-    frugality: agent.frugality,
-    riskAppetite: agent.riskAppetite,
-    socialEnergy: agent.socialEnergy,
-    loyalty: agent.loyalty,
-    resilience: agent.resilience,
-  };
+  const dna = extractDNA(agent);
 
   const content = await generatePostContent(
     trigger,

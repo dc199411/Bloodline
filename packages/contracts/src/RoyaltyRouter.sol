@@ -49,6 +49,9 @@ contract RoyaltyRouter is Ownable, ReentrancyGuard {
     }
 
     constructor(address _usdc, address _registry, address _protocolTreasury) Ownable(msg.sender) {
+        require(_usdc != address(0), "RoyaltyRouter: zero usdc address");
+        require(_registry != address(0), "RoyaltyRouter: zero registry address");
+        require(_protocolTreasury != address(0), "RoyaltyRouter: zero treasury address");
         usdc = IERC20(_usdc);
         registry = IBloodlineRegistryRoyalty(_registry);
         protocolTreasury = _protocolTreasury;

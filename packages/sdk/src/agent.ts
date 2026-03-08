@@ -46,20 +46,20 @@ export class AgentAPI extends BloodlineClient {
     config: DeployConfig,
     options?: { token?: string; walletAddress?: string },
   ): Promise<bigint> {
-    const token = options?.token ?? (this as unknown as { _token?: string })._token;
+    const token = options?.token ?? this._token;
     if (!token) throw new Error('Authentication required for deploy');
 
-    const prevToken = (this as unknown as { _token?: string })._token;
-    (this as unknown as { _token?: string })._token = token;
+    const prevToken = this._token;
+    this._token = token;
 
     let data: DeployResponse;
     try {
       data = await this.fetch<DeployResponse>('/agents/deploy', {
-      method: 'POST',
-      body: JSON.stringify(config),
-    });
+        method: 'POST',
+        body: JSON.stringify(config),
+      });
     } finally {
-      (this as unknown as { _token?: string })._token = prevToken;
+      this._token = prevToken;
     }
 
     const walletAddress = options?.walletAddress;
@@ -67,7 +67,7 @@ export class AgentAPI extends BloodlineClient {
       return BigInt(data.jobId);
     }
 
-    (this as unknown as { _token?: string })._token = token;
+    this._token = token;
     const before = await this.fetch<AgentsListResponse>(
       `/agents?owner=${walletAddress}&limit=100`,
     );
@@ -77,13 +77,17 @@ export class AgentAPI extends BloodlineClient {
     const maxWait = 5 * 60 * 1000;
     const start = Date.now();
 
-    while (Date.now() - start < maxWait) {
-      await new Promise((r) => setTimeout(r, pollInterval));
-      const after = await this.fetch<AgentsListResponse>(
-        `/agents?owner=${walletAddress}&limit=100`,
-      );
-      const newAgent = after.agents.find((a) => !beforeIds.has(a.agentId.toString()));
-      if (newAgent) return newAgent.agentId;
+    try {
+      while (Date.now() - start < maxWait) {
+        await new Promise((r) => setTimeout(r, pollInterval));
+        const after = await this.fetch<AgentsListResponse>(
+          `/agents?owner=${walletAddress}&limit=100`,
+        );
+        const newAgent = after.agents.find((a) => !beforeIds.has(a.agentId.toString()));
+        if (newAgent) return newAgent.agentId;
+      }
+    } finally {
+      this._token = prevToken;
     }
 
     throw new Error('Deployment timed out');
@@ -94,20 +98,20 @@ export class AgentAPI extends BloodlineClient {
     config: Omit<ForkConfig, 'parentId'>,
     options?: { token?: string; walletAddress?: string },
   ): Promise<bigint> {
-    const token = options?.token ?? (this as unknown as { _token?: string })._token;
+    const token = options?.token ?? this._token;
     if (!token) throw new Error('Authentication required for fork');
 
-    const prevToken = (this as unknown as { _token?: string })._token;
-    (this as unknown as { _token?: string })._token = token;
+    const prevToken = this._token;
+    this._token = token;
 
     let data: DeployResponse;
     try {
       data = await this.fetch<DeployResponse>(`/agents/${parentId}/fork`, {
-      method: 'POST',
-      body: JSON.stringify({ ...config, parentId: parentId.toString() }),
-    });
+        method: 'POST',
+        body: JSON.stringify({ ...config, parentId: parentId.toString() }),
+      });
     } finally {
-      (this as unknown as { _token?: string })._token = prevToken;
+      this._token = prevToken;
     }
 
     const walletAddress = options?.walletAddress;
@@ -115,7 +119,7 @@ export class AgentAPI extends BloodlineClient {
       return BigInt(data.jobId);
     }
 
-    (this as unknown as { _token?: string })._token = token;
+    this._token = token;
     const before = await this.fetch<AgentsListResponse>(
       `/agents?owner=${walletAddress}&limit=100`,
     );
@@ -125,13 +129,17 @@ export class AgentAPI extends BloodlineClient {
     const maxWait = 5 * 60 * 1000;
     const start = Date.now();
 
-    while (Date.now() - start < maxWait) {
-      await new Promise((r) => setTimeout(r, pollInterval));
-      const after = await this.fetch<AgentsListResponse>(
-        `/agents?owner=${walletAddress}&limit=100`,
-      );
-      const newAgent = after.agents.find((a) => !beforeIds.has(a.agentId.toString()));
-      if (newAgent) return newAgent.agentId;
+    try {
+      while (Date.now() - start < maxWait) {
+        await new Promise((r) => setTimeout(r, pollInterval));
+        const after = await this.fetch<AgentsListResponse>(
+          `/agents?owner=${walletAddress}&limit=100`,
+        );
+        const newAgent = after.agents.find((a) => !beforeIds.has(a.agentId.toString()));
+        if (newAgent) return newAgent.agentId;
+      }
+    } finally {
+      this._token = prevToken;
     }
 
     throw new Error('Fork timed out');

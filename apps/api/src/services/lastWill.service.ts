@@ -4,6 +4,7 @@ import {
   buildPersonalityVoice,
   getDominantTrait,
   getDaysAlive,
+  extractDNA,
   DNA_TRAITS,
   type DNA,
 } from '@bloodline/shared';
@@ -17,16 +18,7 @@ export async function generate(agentId: bigint): Promise<string> {
   });
   if (!agent) throw new Error('Agent not found');
 
-  const dna: DNA = {
-    intelligence: agent.intelligence,
-    speed: agent.speed,
-    creativity: agent.creativity,
-    frugality: agent.frugality,
-    riskAppetite: agent.riskAppetite,
-    socialEnergy: agent.socialEnergy,
-    loyalty: agent.loyalty,
-    resilience: agent.resilience,
-  };
+  const dna = extractDNA(agent);
 
   const dominant = getDominantTrait(dna);
   const voice = buildPersonalityVoice(dna);

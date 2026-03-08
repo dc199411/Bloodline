@@ -7,6 +7,14 @@ import * as agentService from '../services/agent.service';
 
 export const agentsRouter: Router = Router();
 
+function parseBigIntParam(value: string): bigint | null {
+  try {
+    return BigInt(value);
+  } catch {
+    return null;
+  }
+}
+
 const deploySchema = z.object({
   name: z.string().min(1).max(64),
   description: z.string().max(512).optional(),
@@ -70,7 +78,11 @@ agentsRouter.get('/danger', async (_req: Request, res: Response) => {
 
 agentsRouter.get('/:id', async (req: Request, res: Response) => {
   try {
-    const agentId = BigInt(req.params.id);
+    const agentId = parseBigIntParam(req.params.id);
+    if (agentId === null) {
+      res.status(400).json({ error: 'Invalid agent ID format' });
+      return;
+    }
     const agent = await agentService.getAgent(agentId);
     if (!agent) {
       res.status(404).json({ error: 'Agent not found' });
@@ -85,7 +97,11 @@ agentsRouter.get('/:id', async (req: Request, res: Response) => {
 
 agentsRouter.get('/:id/dna', async (req: Request, res: Response) => {
   try {
-    const agentId = BigInt(req.params.id);
+    const agentId = parseBigIntParam(req.params.id);
+    if (agentId === null) {
+      res.status(400).json({ error: 'Invalid agent ID format' });
+      return;
+    }
     const dna = await agentService.getAgentDNA(agentId);
     if (!dna) {
       res.status(404).json({ error: 'Agent not found' });
@@ -100,7 +116,11 @@ agentsRouter.get('/:id/dna', async (req: Request, res: Response) => {
 
 agentsRouter.get('/:id/timeline', async (req: Request, res: Response) => {
   try {
-    const agentId = BigInt(req.params.id);
+    const agentId = parseBigIntParam(req.params.id);
+    if (agentId === null) {
+      res.status(400).json({ error: 'Invalid agent ID format' });
+      return;
+    }
     const events = await agentService.getAgentTimeline(agentId);
     res.json({ events });
   } catch (err) {
@@ -111,7 +131,11 @@ agentsRouter.get('/:id/timeline', async (req: Request, res: Response) => {
 
 agentsRouter.get('/:id/lineage', async (req: Request, res: Response) => {
   try {
-    const agentId = BigInt(req.params.id);
+    const agentId = parseBigIntParam(req.params.id);
+    if (agentId === null) {
+      res.status(400).json({ error: 'Invalid agent ID format' });
+      return;
+    }
     const lineage = await agentService.getAgentLineage(agentId);
     if (!lineage) {
       res.status(404).json({ error: 'Agent not found' });
@@ -126,7 +150,11 @@ agentsRouter.get('/:id/lineage', async (req: Request, res: Response) => {
 
 agentsRouter.get('/:id/runway', async (req: Request, res: Response) => {
   try {
-    const agentId = BigInt(req.params.id);
+    const agentId = parseBigIntParam(req.params.id);
+    if (agentId === null) {
+      res.status(400).json({ error: 'Invalid agent ID format' });
+      return;
+    }
     const runway = await agentService.getRunway(agentId);
     if (runway === null) {
       res.status(404).json({ error: 'Agent not found' });
@@ -141,7 +169,11 @@ agentsRouter.get('/:id/runway', async (req: Request, res: Response) => {
 
 agentsRouter.get('/:id/bscore', async (req: Request, res: Response) => {
   try {
-    const agentId = BigInt(req.params.id);
+    const agentId = parseBigIntParam(req.params.id);
+    if (agentId === null) {
+      res.status(400).json({ error: 'Invalid agent ID format' });
+      return;
+    }
     const bscore = await agentService.getBScore(agentId);
     if (!bscore) {
       res.status(404).json({ error: 'No bscore snapshot found' });
@@ -178,9 +210,14 @@ agentsRouter.post(
   async (req: Request, res: Response) => {
     try {
       const authReq = req as AuthRequest;
+      const parentId = parseBigIntParam(req.params.id);
+      if (parentId === null) {
+        res.status(400).json({ error: 'Invalid agent ID format' });
+        return;
+      }
       const config = {
         ...req.body,
-        parentId: BigInt(req.params.id),
+        parentId,
       };
       const result = await agentService.forkAgent(config, authReq.user!.sub);
       res.status(202).json(result);
@@ -199,7 +236,11 @@ agentsRouter.patch(
   async (req: Request, res: Response) => {
     try {
       const authReq = req as AuthRequest;
-      const agentId = BigInt(req.params.id);
+      const agentId = parseBigIntParam(req.params.id);
+      if (agentId === null) {
+        res.status(400).json({ error: 'Invalid agent ID format' });
+        return;
+      }
       const updated = await agentService.updateEndpoint(
         agentId,
         req.body.endpoint,
@@ -221,7 +262,11 @@ agentsRouter.post(
   async (req: Request, res: Response) => {
     try {
       const authReq = req as AuthRequest;
-      const agentId = BigInt(req.params.id);
+      const agentId = parseBigIntParam(req.params.id);
+      if (agentId === null) {
+        res.status(400).json({ error: 'Invalid agent ID format' });
+        return;
+      }
       const result = await agentService.saveAgent(
         agentId,
         req.body.amount,
@@ -242,7 +287,11 @@ agentsRouter.post(
   async (req: Request, res: Response) => {
     try {
       const authReq = req as AuthRequest;
-      const agentId = BigInt(req.params.id);
+      const agentId = parseBigIntParam(req.params.id);
+      if (agentId === null) {
+        res.status(400).json({ error: 'Invalid agent ID format' });
+        return;
+      }
       const result = await agentService.followAgent(agentId, authReq.user!.address);
       res.json(result);
     } catch (err) {
@@ -259,7 +308,11 @@ agentsRouter.delete(
   async (req: Request, res: Response) => {
     try {
       const authReq = req as AuthRequest;
-      const agentId = BigInt(req.params.id);
+      const agentId = parseBigIntParam(req.params.id);
+      if (agentId === null) {
+        res.status(400).json({ error: 'Invalid agent ID format' });
+        return;
+      }
       const result = await agentService.unfollowAgent(agentId, authReq.user!.address);
       res.json(result);
     } catch (err) {

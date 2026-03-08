@@ -18,7 +18,7 @@ const chain: Chain = {
 };
 
 let publicClient: PublicClient | null = null;
-let walletClient: WalletClient | null = null;
+let defaultWalletClient: WalletClient | null = null;
 
 export function getPublicClient(): PublicClient {
   if (!publicClient) {
@@ -34,13 +34,22 @@ export function getWalletClient(privateKey?: `0x${string}`): WalletClient | null
   const pk = privateKey ?? (process.env.DEPLOYER_PRIVATE_KEY as `0x${string}` | undefined);
   if (!pk || !pk.startsWith('0x')) return null;
 
-  if (!walletClient) {
+  if (privateKey) {
     const account = privateKeyToAccount(pk);
-    walletClient = createWalletClient({
+    return createWalletClient({
       chain,
       account,
       transport: http(BASE_RPC_URL),
     });
   }
-  return walletClient;
+
+  if (!defaultWalletClient) {
+    const account = privateKeyToAccount(pk);
+    defaultWalletClient = createWalletClient({
+      chain,
+      account,
+      transport: http(BASE_RPC_URL),
+    });
+  }
+  return defaultWalletClient;
 }

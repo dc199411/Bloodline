@@ -3,6 +3,9 @@ import { prisma } from '../lib/prisma';
 
 export const lineageRouter: Router = Router();
 
+const MAX_TREE_DEPTH = 10;
+const MAX_ANCESTOR_DEPTH = 50;
+
 interface LineageNode {
   agentId: bigint;
   name: string;
@@ -11,7 +14,9 @@ interface LineageNode {
   children: LineageNode[];
 }
 
-async function buildDescendantTree(rootAgentId: bigint): Promise<LineageNode | null> {
+async function buildDescendantTree(rootAgentId: bigint, depth = 0): Promise<LineageNode | null> {
+  if (depth > MAX_TREE_DEPTH) return null;
+
   const agent = await prisma.agent.findUnique({
     where: { agentId: rootAgentId },
     select: { agentId: true, name: true, stage: true, lineageDepth: true },
@@ -25,7 +30,7 @@ async function buildDescendantTree(rootAgentId: bigint): Promise<LineageNode | n
 
   const childNodes: LineageNode[] = [];
   for (const child of children) {
-    const subtree = await buildDescendantTree(child.agentId);
+    const subtree = await buildDescendantTree(child.agentId, depth + 1);
     if (subtree) childNodes.push(subtree);
   }
 
@@ -38,9 +43,21 @@ async function buildDescendantTree(rootAgentId: bigint): Promise<LineageNode | n
   };
 }
 
+function parseBigIntParam(value: string): bigint | null {
+  try {
+    return BigInt(value);
+  } catch {
+    return null;
+  }
+}
+
 lineageRouter.get('/:rootId/tree', async (req: Request, res: Response) => {
   try {
-    const rootId = BigInt(req.params.rootId);
+    const rootId = parseBigIntParam(req.params.rootId);
+    if (rootId === null) {
+      res.status(400).json({ error: 'Invalid ID format' });
+      return;
+    }
     const tree = await buildDescendantTree(rootId);
     if (!tree) {
       res.status(404).json({ error: 'Agent not found' });
@@ -55,7 +72,11 @@ lineageRouter.get('/:rootId/tree', async (req: Request, res: Response) => {
 
 lineageRouter.get('/:agentId/ancestors', async (req: Request, res: Response) => {
   try {
-    const agentId = BigInt(req.params.agentId);
+    const agentId = parseBigIntParam(req.params.agentId);
+    if (agentId === null) {
+      res.status(400).json({ error: 'Invalid ID format' });
+      return;
+    }
 
     const ancestors: Array<{
       agentId: bigint;
@@ -65,8 +86,10 @@ lineageRouter.get('/:agentId/ancestors', async (req: Request, res: Response) => 
     }> = [];
 
     let currentId: bigint | null = agentId;
+    let iterations = 0;
 
-    while (currentId !== null) {
+    while (currentId !== null && iterations < MAX_ANCESTOR_DEPTH) {
+      iterations++;
       const found: {
         agentId: bigint;
         name: string;

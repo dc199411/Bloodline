@@ -6,24 +6,23 @@ const NFT_CONTRACT_ADDRESS = process.env.NFT_CONTRACT_ADDRESS as `0x${string}` |
 
 const BLOODLINE_NFT_ABI = [
   {
-    name: 'mintBirthCertificate',
+    name: 'mintBirthNFT',
     type: 'function',
     stateMutability: 'nonpayable',
     inputs: [
+      { name: 'agentId', type: 'uint256' },
+      { name: 'dna', type: 'uint8[8]' },
       { name: 'to', type: 'address' },
-      { name: 'tokenId', type: 'uint256' },
-      { name: 'uri', type: 'string' },
     ],
     outputs: [],
   },
   {
-    name: 'mintDeathCertificate',
+    name: 'mintDeathNFT',
     type: 'function',
     stateMutability: 'nonpayable',
     inputs: [
+      { name: 'agentId', type: 'uint256' },
       { name: 'to', type: 'address' },
-      { name: 'tokenId', type: 'uint256' },
-      { name: 'uri', type: 'string' },
     ],
     outputs: [],
   },
@@ -36,7 +35,11 @@ const BLOODLINE_NFT_ABI = [
   },
 ] as const;
 
-export async function mintBirthNFT(to: `0x${string}`, agentId: bigint, metadataUri: string) {
+export async function mintBirthNFT(
+  to: `0x${string}`,
+  agentId: bigint,
+  dna: [number, number, number, number, number, number, number, number],
+) {
   const walletClient = getWalletClient();
   if (!walletClient) throw new Error('Wallet client not configured');
   if (!NFT_CONTRACT_ADDRESS) throw new Error('NFT contract address not configured');
@@ -46,14 +49,14 @@ export async function mintBirthNFT(to: `0x${string}`, agentId: bigint, metadataU
     account: walletClient.account!,
     address: NFT_CONTRACT_ADDRESS,
     abi: BLOODLINE_NFT_ABI,
-    functionName: 'mintBirthCertificate',
-    args: [to, agentId, metadataUri],
+    functionName: 'mintBirthNFT',
+    args: [agentId, dna, to],
   });
 
   return { txHash: hash };
 }
 
-export async function mintDeathNFT(to: `0x${string}`, agentId: bigint, lastWillUri: string) {
+export async function mintDeathNFT(to: `0x${string}`, agentId: bigint) {
   const walletClient = getWalletClient();
   if (!walletClient) throw new Error('Wallet client not configured');
   if (!NFT_CONTRACT_ADDRESS) throw new Error('NFT contract address not configured');
@@ -65,8 +68,8 @@ export async function mintDeathNFT(to: `0x${string}`, agentId: bigint, lastWillU
     account: walletClient.account!,
     address: NFT_CONTRACT_ADDRESS,
     abi: BLOODLINE_NFT_ABI,
-    functionName: 'mintDeathCertificate',
-    args: [to, deathTokenId, lastWillUri],
+    functionName: 'mintDeathNFT',
+    args: [agentId, to],
   });
 
   return { txHash: hash, tokenId: deathTokenId };

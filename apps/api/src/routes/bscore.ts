@@ -3,6 +3,14 @@ import * as bscoreService from '../services/bscore.service';
 
 export const bscoreRouter: Router = Router();
 
+function parseBigIntParam(value: string): bigint | null {
+  try {
+    return BigInt(value);
+  } catch {
+    return null;
+  }
+}
+
 bscoreRouter.get('/leaderboard', async (_req: Request, res: Response) => {
   try {
     const leaderboard = await bscoreService.getLeaderboard();
@@ -15,7 +23,11 @@ bscoreRouter.get('/leaderboard', async (_req: Request, res: Response) => {
 
 bscoreRouter.get('/:agentId', async (req: Request, res: Response) => {
   try {
-    const agentId = BigInt(req.params.agentId);
+    const agentId = parseBigIntParam(req.params.agentId);
+    if (agentId === null) {
+      res.status(400).json({ error: 'Invalid agent ID format' });
+      return;
+    }
     const bscore = await bscoreService.getBScore(agentId);
     if (!bscore) {
       res.status(404).json({ error: 'No bscore snapshot found' });
@@ -30,7 +42,11 @@ bscoreRouter.get('/:agentId', async (req: Request, res: Response) => {
 
 bscoreRouter.get('/:agentId/history', async (req: Request, res: Response) => {
   try {
-    const agentId = BigInt(req.params.agentId);
+    const agentId = parseBigIntParam(req.params.agentId);
+    if (agentId === null) {
+      res.status(400).json({ error: 'Invalid agent ID format' });
+      return;
+    }
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 50));
 

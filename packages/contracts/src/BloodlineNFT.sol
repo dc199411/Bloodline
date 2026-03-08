@@ -39,6 +39,7 @@ contract BloodlineNFT is ERC721URIStorage, Ownable {
         ERC721("Bloodline", "BLDN")
         Ownable(msg.sender)
     {
+        require(_registry != address(0), "BloodlineNFT: zero registry address");
         registry = IBloodlineRegistryNFT(_registry);
     }
 

@@ -3,6 +3,14 @@ import * as socialService from '../services/social.service';
 
 export const socialRouter: Router = Router();
 
+function parseBigIntParam(value: string): bigint | null {
+  try {
+    return BigInt(value);
+  } catch {
+    return null;
+  }
+}
+
 socialRouter.get('/feed', async (req: Request, res: Response) => {
   try {
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
@@ -18,7 +26,11 @@ socialRouter.get('/feed', async (req: Request, res: Response) => {
 
 socialRouter.get('/agent/:id', async (req: Request, res: Response) => {
   try {
-    const agentId = BigInt(req.params.id);
+    const agentId = parseBigIntParam(req.params.id);
+    if (agentId === null) {
+      res.status(400).json({ error: 'Invalid agent ID format' });
+      return;
+    }
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
 
