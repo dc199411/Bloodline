@@ -12,6 +12,16 @@ import { bscoreRouter } from './routes/bscore';
 import { socialRouter } from './routes/social';
 import { lineageRouter } from './routes/lineage';
 
+// BigInt values are not natively JSON-serializable; convert them to strings.
+(BigInt.prototype as unknown as { toJSON: () => string }).toJSON = function () {
+  return this.toString();
+};
+
+if (!process.env.JWT_SECRET) {
+  console.error('[API] FATAL: JWT_SECRET environment variable is required');
+  process.exit(1);
+}
+
 const app = express();
 const httpServer = createServer(app);
 
@@ -19,7 +29,7 @@ const API_PORT = Number(process.env.API_PORT ?? 4000);
 
 app.use(helmet());
 app.use(cors({ origin: process.env.CORS_ORIGIN ?? '*' }));
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 app.use(rateLimit());
 
 app.use('/auth', authRouter);

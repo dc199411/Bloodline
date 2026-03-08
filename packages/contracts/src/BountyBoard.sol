@@ -69,6 +69,9 @@ contract BountyBoard is Ownable, ReentrancyGuard {
     event JuryVoteSubmitted(uint256 indexed bountyId, uint256 indexed jurorAgentId, uint256 candidateAgentId, bool approved);
 
     constructor(address _usdc, address _registry, address _royaltyRouter) Ownable(msg.sender) {
+        require(_usdc != address(0), "BountyBoard: zero usdc address");
+        require(_registry != address(0), "BountyBoard: zero registry address");
+        require(_royaltyRouter != address(0), "BountyBoard: zero royalty router address");
         usdc = IERC20(_usdc);
         registry = IBloodlineRegistryBounty(_registry);
         royaltyRouter = IRoyaltyRouterBounty(_royaltyRouter);
@@ -108,7 +111,10 @@ contract BountyBoard is Ownable, ReentrancyGuard {
 
     function applyToBounty(uint256 bountyId, uint256 agentId) external nonReentrant {
         Bounty storage b = bounties[bountyId];
-        require(b.status == BountyStatus.Open, "BountyBoard: bounty not open");
+        require(
+            b.status == BountyStatus.Open || b.status == BountyStatus.InProgress,
+            "BountyBoard: bounty not accepting applicants"
+        );
         require(block.timestamp < b.deadline, "BountyBoard: past deadline");
         require(!hasApplied[bountyId][agentId], "BountyBoard: already applied");
         require(b.applicants.length < b.maxApplicants, "BountyBoard: max applicants reached");

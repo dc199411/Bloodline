@@ -6,7 +6,7 @@ export interface BloodlineClientOptions {
 export class BloodlineClient {
   readonly apiUrl: string;
   readonly wsUrl: string;
-  private _token?: string;
+  protected _token?: string;
 
   constructor(apiUrl: string, wsUrl?: string);
   constructor(options: BloodlineClientOptions);

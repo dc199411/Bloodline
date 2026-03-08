@@ -110,6 +110,28 @@ export function shortenAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
+export function extractDNA(agent: {
+  intelligence: number;
+  speed: number;
+  creativity: number;
+  frugality: number;
+  riskAppetite: number;
+  socialEnergy: number;
+  loyalty: number;
+  resilience: number;
+}): DNA {
+  return {
+    intelligence: agent.intelligence,
+    speed: agent.speed,
+    creativity: agent.creativity,
+    frugality: agent.frugality,
+    riskAppetite: agent.riskAppetite,
+    socialEnergy: agent.socialEnergy,
+    loyalty: agent.loyalty,
+    resilience: agent.resilience,
+  };
+}
+
 export function buildPersonalityVoice(dna: DNA): string {
   const dominant = getDominantTrait(dna);
   const voices: Record<DNATrait, string> = {

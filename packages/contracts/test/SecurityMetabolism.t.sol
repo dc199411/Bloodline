@@ -20,10 +20,12 @@ contract SecurityMetabolismTest is Test {
         riskAppetite: 60, socialEnergy: 50, loyalty: 85, resilience: 95
     });
 
+    address mockUsdc = makeAddr("usdc");
+
     function setUp() public {
         registry = new BloodlineRegistry();
         nft = new BloodlineNFT(address(registry));
-        metabolism = new MetabolismOracle(address(registry), address(nft), address(0));
+        metabolism = new MetabolismOracle(address(registry), address(nft), mockUsdc);
 
         registry.setMetabolismOracle(address(metabolism));
         registry.setVRFConsumer(deployer);
@@ -44,33 +46,33 @@ contract SecurityMetabolismTest is Test {
 
     function testBurnRateAlwaysPositive() public view {
         for (uint8 i = 0; i < 255; i++) {
-            uint256 rate = metabolism._calculateBurnRate(i);
+            uint256 rate = metabolism.calculateBurnRate(i);
             assertGt(rate, 0, "Burn rate must be positive for all frugality values");
         }
-        uint256 rate255 = metabolism._calculateBurnRate(255);
+        uint256 rate255 = metabolism.calculateBurnRate(255);
         assertGt(rate255, 0, "Burn rate must be positive even at frugality=255");
     }
 
     function testBurnRateMaxAtFrugalityZero() public view {
-        uint256 rateMin = metabolism._calculateBurnRate(0);
-        uint256 rateMax = metabolism._calculateBurnRate(255);
+        uint256 rateMin = metabolism.calculateBurnRate(0);
+        uint256 rateMax = metabolism.calculateBurnRate(255);
         assertGt(rateMin, rateMax, "Frugality=0 should have higher burn than frugality=255");
     }
 
     function testFuzz_BurnRateAlwaysPositive(uint8 frugality) public view {
-        uint256 rate = metabolism._calculateBurnRate(frugality);
+        uint256 rate = metabolism.calculateBurnRate(frugality);
         assertGt(rate, 0, "Burn rate must always be > 0");
     }
 
     function testBurnRateFrugality255MinimumGuarantee() public view {
-        uint256 rate = metabolism._calculateBurnRate(255);
+        uint256 rate = metabolism.calculateBurnRate(255);
         assertGe(rate, 1, "Minimum burn rate must be at least 1 (MIN_BURN_RATE)");
     }
 
     function testBurnRateMonotonicallyDecreasing() public view {
-        uint256 prevRate = metabolism._calculateBurnRate(0);
+        uint256 prevRate = metabolism.calculateBurnRate(0);
         for (uint8 i = 1; i < 255; i++) {
-            uint256 rate = metabolism._calculateBurnRate(i);
+            uint256 rate = metabolism.calculateBurnRate(i);
             assertLe(rate, prevRate, "Burn rate should decrease as frugality increases");
             prevRate = rate;
         }

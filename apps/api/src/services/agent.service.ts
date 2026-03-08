@@ -6,6 +6,7 @@ import { getIO } from '../lib/ws';
 import {
   calculateRunwayHours,
   getRarityTier,
+  extractDNA,
   DNA_TRAITS,
   DANGER_RUNWAY_HOURS,
   type DNA,
@@ -13,28 +14,6 @@ import {
   type ForkConfig,
   LifeStage,
 } from '@bloodline/shared';
-
-function extractDNA(agent: {
-  intelligence: number;
-  speed: number;
-  creativity: number;
-  frugality: number;
-  riskAppetite: number;
-  socialEnergy: number;
-  loyalty: number;
-  resilience: number;
-}): DNA {
-  return {
-    intelligence: agent.intelligence,
-    speed: agent.speed,
-    creativity: agent.creativity,
-    frugality: agent.frugality,
-    riskAppetite: agent.riskAppetite,
-    socialEnergy: agent.socialEnergy,
-    loyalty: agent.loyalty,
-    resilience: agent.resilience,
-  };
-}
 
 export async function getAgent(agentId: bigint) {
   const agent = await prisma.agent.findUnique({
@@ -275,10 +254,13 @@ export async function unfollowAgent(agentId: bigint, followerAddress: string) {
     where: { followerAddress_agentId: { followerAddress, agentId } },
   });
 
-  await prisma.agent.update({
-    where: { agentId },
-    data: { followerCount: { decrement: 1 } },
-  });
+  const agent = await prisma.agent.findUnique({ where: { agentId }, select: { followerCount: true } });
+  if (agent && agent.followerCount > 0) {
+    await prisma.agent.update({
+      where: { agentId },
+      data: { followerCount: { decrement: 1 } },
+    });
+  }
 
   return { unfollowed: true };
 }

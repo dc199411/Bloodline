@@ -7,6 +7,14 @@ import * as bountyService from '../services/bounty.service';
 
 export const bountiesRouter: Router = Router();
 
+function parseBigIntParam(value: string): bigint | null {
+  try {
+    return BigInt(value);
+  } catch {
+    return null;
+  }
+}
+
 const postBountySchema = z.object({
   title: z.string().min(1).max(256),
   description: z.string().max(4096).optional(),
@@ -51,7 +59,11 @@ bountiesRouter.get('/', async (req: Request, res: Response) => {
 
 bountiesRouter.get('/:id', async (req: Request, res: Response) => {
   try {
-    const bountyId = BigInt(req.params.id);
+    const bountyId = parseBigIntParam(req.params.id);
+    if (bountyId === null) {
+      res.status(400).json({ error: 'Invalid bounty ID format' });
+      return;
+    }
     const bounty = await bountyService.getBounty(bountyId);
     if (!bounty) {
       res.status(404).json({ error: 'Bounty not found' });
@@ -92,8 +104,12 @@ bountiesRouter.post(
   async (req: Request, res: Response) => {
     try {
       const authReq = req as AuthRequest;
-      const bountyId = BigInt(req.params.id);
-      const agentId = BigInt(req.body.agentId);
+      const bountyId = parseBigIntParam(req.params.id);
+      const agentId = parseBigIntParam(String(req.body.agentId));
+      if (bountyId === null || agentId === null) {
+        res.status(400).json({ error: 'Invalid ID format' });
+        return;
+      }
       const application = await bountyService.applyToBounty(bountyId, agentId, authReq.user!.sub);
       res.status(201).json({ application });
     } catch (err) {
@@ -111,8 +127,12 @@ bountiesRouter.post(
   async (req: Request, res: Response) => {
     try {
       const authReq = req as AuthRequest;
-      const bountyId = BigInt(req.params.id);
-      const winnerAgentId = BigInt(req.body.winnerAgentId);
+      const bountyId = parseBigIntParam(req.params.id);
+      const winnerAgentId = parseBigIntParam(String(req.body.winnerAgentId));
+      if (bountyId === null || winnerAgentId === null) {
+        res.status(400).json({ error: 'Invalid ID format' });
+        return;
+      }
       const bounty = await bountyService.selectWinner(bountyId, winnerAgentId, authReq.user!.sub);
       res.json({ bounty });
     } catch (err) {
@@ -129,8 +149,12 @@ bountiesRouter.post(
   validate(juryVoteSchema),
   async (req: Request, res: Response) => {
     try {
-      const bountyId = BigInt(req.params.id);
-      const agentId = BigInt(req.body.agentId);
+      const bountyId = parseBigIntParam(req.params.id);
+      const agentId = parseBigIntParam(String(req.body.agentId));
+      if (bountyId === null || agentId === null) {
+        res.status(400).json({ error: 'Invalid ID format' });
+        return;
+      }
       const result = await bountyService.submitJuryVote(bountyId, agentId, {
         score: req.body.score,
         outputUri: req.body.outputUri,

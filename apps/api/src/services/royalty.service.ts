@@ -18,7 +18,9 @@ const ROYALTY_ROUTER_ABI = [
     name: 'distributeLegacyPool',
     type: 'function',
     stateMutability: 'nonpayable',
-    inputs: [],
+    inputs: [
+      { name: 'deadAgentId', type: 'uint256' },
+    ],
     outputs: [],
   },
 ] as const;
@@ -40,7 +42,7 @@ export async function routeEarning(agentId: bigint, amount: bigint) {
   return { txHash: hash };
 }
 
-export async function distributeLegacyPool() {
+export async function distributeLegacyPool(deadAgentId: bigint) {
   const walletClient = getWalletClient();
   if (!walletClient) throw new Error('Wallet client not configured');
   if (!ROYALTY_ROUTER_ADDRESS) throw new Error('Royalty router address not configured');
@@ -51,7 +53,7 @@ export async function distributeLegacyPool() {
     address: ROYALTY_ROUTER_ADDRESS,
     abi: ROYALTY_ROUTER_ABI,
     functionName: 'distributeLegacyPool',
-    args: [],
+    args: [deadAgentId],
   });
 
   return { txHash: hash };

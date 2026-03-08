@@ -62,6 +62,9 @@ contract MetabolismOracle is AutomationCompatibleInterface, Ownable {
     }
 
     constructor(address _registry, address _nft, address _usdc) Ownable(msg.sender) {
+        require(_registry != address(0), "MetabolismOracle: zero registry address");
+        require(_nft != address(0), "MetabolismOracle: zero nft address");
+        require(_usdc != address(0), "MetabolismOracle: zero usdc address");
         registry = IBloodlineRegistryMetabolism(_registry);
         nft = IBloodlineNFTMetabolism(_nft);
         usdc = IERC20(_usdc);
@@ -119,7 +122,7 @@ contract MetabolismOracle is AutomationCompatibleInterface, Ownable {
         lastCheck[agentId] = block.timestamp;
 
         IBloodlineRegistryMetabolism.DNA memory dna = registry.getDNA(agentId);
-        uint256 burnRate = _calculateBurnRate(dna.frugality);
+        uint256 burnRate = calculateBurnRate(dna.frugality);
 
         address agentWallet = registry.getAgentWallet(agentId);
         uint256 balance = usdc.balanceOf(agentWallet);
@@ -138,7 +141,7 @@ contract MetabolismOracle is AutomationCompatibleInterface, Ownable {
 
     uint256 public constant MIN_BURN_RATE = 1;
 
-    function _calculateBurnRate(uint8 frugality) public pure returns (uint256) {
+    function calculateBurnRate(uint8 frugality) public pure returns (uint256) {
         uint256 rate = BASE_BURN_RATE * (256 - uint256(frugality)) / 128;
         return rate > MIN_BURN_RATE ? rate : MIN_BURN_RATE;
     }
