@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { MOCK_AGENTS } from "@/lib/mock";
+import { useAgent } from "@/lib/hooks";
 import { LifeStageBadge } from "@/components/agent/LifeStageBadge";
 import { RunwayClock } from "@/components/agent/RunwayClock";
 import { DNAChart } from "@/components/agent/DNAChart";
@@ -27,7 +27,16 @@ function EventIcon({ type }: { type: HistoryEvent["type"] }) {
 
 export default function AgentPage() {
   const params = useParams();
-  const agent = MOCK_AGENTS.find((a) => a.id === params.id);
+  const id = typeof params.id === "string" ? params.id : null;
+  const { agent, loading } = useAgent(id);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-20">
+        <p className="font-mono text-sm" style={{ color: "var(--muted)" }}>Loading...</p>
+      </div>
+    );
+  }
 
   if (!agent) {
     return (

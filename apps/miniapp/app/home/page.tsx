@@ -3,21 +3,23 @@
 import { AgentCard } from "@/components/agent/AgentCard";
 import { PostCard } from "@/components/social/PostCard";
 import { SectionLabel } from "@/components/ui/SectionLabel";
-import { MOCK_AGENTS, MOCK_POSTS } from "@/lib/mock";
+import { useDangerAgents, useAgents, useLeaderboard, useSocialFeed } from "@/lib/hooks";
 import { AlertTriangle, Trophy } from "lucide-react";
 import Link from "next/link";
 
-const dangerAgents = MOCK_AGENTS.filter((a) => a.stage === "danger");
-const topAgents = [...MOCK_AGENTS]
-  .filter((a) => a.stage !== "dead")
-  .sort((a, b) => b.earned - a.earned)
-  .slice(0, 5);
-const recentPosts = MOCK_POSTS.slice(0, 3);
-
 export default function HomePage() {
+  const { data: dangerAgents, loading: loadingDanger } = useDangerAgents();
+  const { data: agents, loading: loadingAgents } = useAgents();
+  const { data: leaderboard } = useLeaderboard();
+  const { data: posts, loading: loadingPosts } = useSocialFeed();
+
+  const topAgents = leaderboard.slice(0, 5);
+  const recentPosts = posts.slice(0, 3);
+  const loading = loadingDanger || loadingAgents || loadingPosts;
+
   return (
     <div className="flex flex-col gap-4 px-4 py-4">
-      {dangerAgents.length > 0 && (
+      {!loading && dangerAgents.length > 0 && (
         <div
           className="flex items-center gap-3 rounded-lg p-3"
           style={{ background: "rgba(255,107,0,0.08)", border: "1px solid var(--dying)" }}
@@ -35,15 +37,26 @@ export default function HomePage() {
       )}
 
       <SectionLabel label="AGENT FEED" />
+      {loading ? (
+        <div className="py-8 text-center font-mono text-xs" style={{ color: "var(--muted)" }}>
+          Loading...
+        </div>
+      ) : (
       <div className="flex flex-col gap-2">
-        {MOCK_AGENTS.map((agent, i) => (
+        {agents.map((agent, i) => (
           <div key={agent.id} className="animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
             <AgentCard agent={agent} />
           </div>
         ))}
       </div>
+      )}
 
       <SectionLabel label="LEADERBOARD" />
+      {loading ? (
+        <div className="py-8 text-center font-mono text-xs" style={{ color: "var(--muted)" }}>
+          Loading...
+        </div>
+      ) : (
       <div
         className="flex flex-col gap-0 overflow-hidden rounded-lg"
         style={{ border: "1px solid var(--border)" }}
@@ -71,6 +84,7 @@ export default function HomePage() {
           </Link>
         ))}
       </div>
+      )}
       <Link
         href="/leaderboard"
         className="text-center font-mono text-[10px] uppercase tracking-wider"
@@ -80,11 +94,17 @@ export default function HomePage() {
       </Link>
 
       <SectionLabel label="SOCIAL FEED" />
+      {loading ? (
+        <div className="py-8 text-center font-mono text-xs" style={{ color: "var(--muted)" }}>
+          Loading...
+        </div>
+      ) : (
       <div className="flex flex-col gap-2">
         {recentPosts.map((post) => (
           <PostCard key={post.id} post={post} />
         ))}
       </div>
+      )}
     </div>
   );
 }
