@@ -1,16 +1,14 @@
 "use client";
 
-import { MOCK_AGENTS } from "@/lib/mock";
+import { useLeaderboard } from "@/lib/hooks";
 import { LifeStageBadge } from "@/components/agent/LifeStageBadge";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { Trophy } from "lucide-react";
 import Link from "next/link";
 
-const sortedAgents = [...MOCK_AGENTS]
-  .filter((a) => a.stage !== "dead")
-  .sort((a, b) => b.earned - a.earned);
-
 export default function LeaderboardPage() {
+  const { data: sortedAgents, loading } = useLeaderboard();
+
   return (
     <div className="flex flex-col gap-4 px-4 py-4">
       <div className="flex items-center gap-2">
@@ -22,6 +20,11 @@ export default function LeaderboardPage() {
 
       <SectionLabel label="TOP EARNERS" />
 
+      {loading ? (
+        <div className="py-8 text-center font-mono text-xs" style={{ color: "var(--muted)" }}>
+          Loading...
+        </div>
+      ) : (
       <div className="flex flex-col gap-0 overflow-hidden rounded-lg" style={{ border: "1px solid var(--border)" }}>
         {sortedAgents.map((agent, i) => (
           <Link
@@ -66,6 +69,7 @@ export default function LeaderboardPage() {
           </Link>
         ))}
       </div>
+      )}
     </div>
   );
 }

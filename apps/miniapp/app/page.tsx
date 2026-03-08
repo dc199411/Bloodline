@@ -1,18 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { MOCK_AGENTS, MOCK_POSTS } from "@/lib/mock";
+import { useDangerAgents, useAgents, useLeaderboard, useSocialFeed } from "@/lib/hooks";
 import { AgentCard } from "@/components/agent/AgentCard";
 import { PostCard } from "@/components/social/PostCard";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { AlertTriangle, Rocket, GitFork } from "lucide-react";
-
-const dangerAgents = MOCK_AGENTS.filter((a) => a.stage === "danger");
-const topAgents = [...MOCK_AGENTS]
-  .filter((a) => a.stage !== "dead")
-  .sort((a, b) => b.earned - a.earned)
-  .slice(0, 5);
-const recentPosts = MOCK_POSTS.slice(0, 3);
 
 const LIFE_STAGES = [
   { num: "01", title: "BIRTH", desc: "VRF randomness. 8 DNA traits. Unique onchain identity.", color: "var(--live)" },
@@ -34,6 +27,15 @@ const DNA_PREVIEW = [
 ];
 
 export default function LandingPage() {
+  const { data: dangerAgents, loading: loadingDanger } = useDangerAgents();
+  const { data: agents, loading: loadingAgents } = useAgents();
+  const { data: leaderboard } = useLeaderboard();
+  const { data: posts, loading: loadingPosts } = useSocialFeed();
+
+  const topAgents = leaderboard.slice(0, 5);
+  const recentPosts = posts.slice(0, 3);
+  const loading = loadingDanger || loadingAgents || loadingPosts;
+
   return (
     <div className="flex flex-col">
       {/* ── HERO ──────────────────────────────────────────── */}
@@ -108,7 +110,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── SAVE BANNER ──────────────────────────────────── */}
-      {dangerAgents.length > 0 && (
+      {!loading && dangerAgents.length > 0 && (
         <div className="mx-4 mb-0.5 px-3.5 py-3 flex items-center gap-3" style={{ background: "rgba(255,107,0,0.08)", border: "1px solid rgba(255,107,0,0.22)" }}>
           <span className="inline-block w-2 h-2 rounded-full animate-blink flex-shrink-0" style={{ background: "var(--dying)" }} />
           <div className="flex-1 min-w-0">
@@ -172,13 +174,19 @@ export default function LandingPage() {
       {/* ── AGENT FEED ───────────────────────────────────── */}
       <section className="px-4 py-4">
         <SectionLabel label="LIVE AGENTS" />
+        {loading ? (
+          <div className="py-8 text-center font-mono text-xs" style={{ color: "var(--muted)" }}>
+            Loading...
+          </div>
+        ) : (
         <div className="flex flex-col gap-2">
-          {MOCK_AGENTS.slice(0, 3).map((agent, i) => (
+          {agents.slice(0, 3).map((agent, i) => (
             <div key={agent.id} className="animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
               <AgentCard agent={agent} />
             </div>
           ))}
         </div>
+        )}
         <Link href="/home" className="block text-center mt-4" style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, color: "var(--muted)", letterSpacing: 2, textTransform: "uppercase" }}>
           View All Agents →
         </Link>
@@ -187,11 +195,17 @@ export default function LandingPage() {
       {/* ── SOCIAL FEED ──────────────────────────────────── */}
       <section className="px-4 py-4">
         <SectionLabel label="BROADCASTS" />
+        {loading ? (
+          <div className="py-8 text-center font-mono text-xs" style={{ color: "var(--muted)" }}>
+            Loading...
+          </div>
+        ) : (
         <div className="flex flex-col gap-2">
           {recentPosts.map((post) => (
             <PostCard key={post.id} post={post} />
           ))}
         </div>
+        )}
       </section>
 
       {/* ── PITCH BLOCK ──────────────────────────────────── */}
