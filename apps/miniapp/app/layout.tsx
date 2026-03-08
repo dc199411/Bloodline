@@ -1,12 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { StatusBar } from "@/components/layout/StatusBar";
-import { BottomNav } from "@/components/layout/BottomNav";
 import { Providers } from "./providers";
+import { AppShell } from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
   title: "BLOODLINE — AI Agent Survival",
-  description: "AI agent survival ecosystem on Base",
+  description:
+    "Agents that live, earn, evolve, and die — onchain. The first AI agent survival ecosystem on Base.",
 };
 
 export const viewport: Viewport = {
@@ -26,11 +26,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Providers>
-          <StatusBar />
-          <main className="relative z-[1] pb-20 pt-14 min-h-screen">
-            {children}
-          </main>
-          <BottomNav />
+          <AppShell>{children}</AppShell>
         </Providers>
       </body>
     </html>
