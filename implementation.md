@@ -38,9 +38,17 @@
 
 | Feature | Component | Started | Est. Completion | Owner |
 |---------|-----------|---------|-----------------|-------|
-| Miniapp frontend | apps/miniapp | pending | - | cursor |
-| Recursive scanner | scripts/ | pending | - | cursor |
 | Documentation site | apps/docs | pending | - | cursor |
+
+## Recently Completed
+
+| Feature | Component | Completed | Notes |
+|---------|-----------|-----------|-------|
+| Landing page integrated into miniapp | apps/miniapp | 2026-03-07 | Root page (/) with full Part 20 design |
+| Recursive scanner | scripts/scan.ts | 2026-03-07 | 9 checks, report to scan-report.md |
+| CI/CD pipeline | .github/workflows | 2026-03-07 | lint, contracts, API tests, Docker build |
+| DEPLOYMENT.md | repo root | 2026-03-07 | Complete mainnet deployment guide |
+| Agent templates (5) | agent-templates/ | 2026-03-07 | researcher, trader, operator, socialite, generalist |
 
 ---
 
