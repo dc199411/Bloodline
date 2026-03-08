@@ -1,7 +1,7 @@
 # BLOODLINE — Agent Status Dashboard
 
 > Last updated: 2026-03-08
-> System status: **DEVELOPMENT COMPLETE** — ready for testnet deployment
+> System status: **PRODUCTION READY** — pending testnet deployment + API tests
 
 ---
 

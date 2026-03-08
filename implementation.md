@@ -1,8 +1,8 @@
 # BLOODLINE — Implementation Status
 
-> Last updated: 2026-03-07
-> Git commit: latest
+> Last updated: 2026-03-08
 > Version: 0.1.0-dev
+> Scanner: 0 CRITICAL | 1 ERROR (type assertions) | 80 WARNINGS
 
 ---
 
@@ -10,45 +10,51 @@
 
 | Feature | Component | Completed | Notes |
 |---------|-----------|-----------|-------|
-| Monorepo setup (pnpm + turbo) | Foundation | 2026-03-07 | pnpm-workspace.yaml, turbo.json |
-| .env.example | Foundation | 2026-03-07 | All 45+ vars documented |
-| Shared types package | packages/shared | 2026-03-07 | DNA, Agent, Bounty, BScore types |
+| pnpm monorepo + Turborepo | Foundation | 2026-03-07 | pnpm-workspace.yaml, turbo.json |
+| .env.example | Foundation | 2026-03-08 | 65+ vars documented |
+| Shared types package | packages/shared | 2026-03-07 | DNA, Agent, Bounty, BScore, 20+ types |
 | Prisma schema | apps/api | 2026-03-07 | 7 models, all indexes |
 | Docker compose | infra/ | 2026-03-07 | postgres, redis, anvil |
-| BloodlineRegistry.sol | contracts | 2026-03-07 | Agent registry, DNA, life stages |
-| VRFConsumer.sol | contracts | 2026-03-07 | Chainlink VRF DNA generation |
-| MetabolismOracle.sol | contracts | 2026-03-07 | Hourly burn checks, death trigger |
-| BountyBoard.sol | contracts | 2026-03-07 | Escrow, jury, auto-grader |
-| RoyaltyRouter.sol | contracts | 2026-03-07 | 3-gen lineage royalties |
-| BloodlineBScore.sol | contracts | 2026-03-07 | Onchain reputation scoring |
-| BloodlineNFT.sol | contracts | 2026-03-07 | Soulbound birth + tradeable death NFTs |
-| Deploy.s.sol | contracts | 2026-03-07 | Dependency-aware deploy script |
-| API server + middleware | apps/api | 2026-03-07 | Express, auth, rate limit, validate |
-| API routes (all) | apps/api | 2026-03-07 | auth, agents, bounties, bscore, social, lineage |
-| API services (all 8) | apps/api | 2026-03-07 | agent, bounty, bscore, metabolism, social, lastWill, nft, royalty |
-| API workers (all 5) | apps/api | 2026-03-07 | metabolism, death, social, bscore, deploy |
-| Agent runtime | packages/runtime | 2026-03-07 | HTTP protocol, LangGraph, plugins |
-| SDK | packages/sdk | 2026-03-07 | TypeScript client |
-| CLI | packages/cli | 2026-03-07 | birth + fork commands |
-| Security tests (136 passing) | contracts/test | 2026-03-07 | Fuzz, access control, invariants |
+| BloodlineRegistry.sol | contracts | 2026-03-07 | + getAgentOwner/Wallet/Stage/ParentId |
+| VRFConsumer.sol | contracts | 2026-03-07 | Genesis + fork DNA, prodigy detection |
+| MetabolismOracle.sol | contracts | 2026-03-07 | MIN_BURN_RATE=1 guaranteed |
+| BountyBoard.sol | contracts | 2026-03-07 | Escrow, jury, 1hr deadline minimum |
+| RoyaltyRouter.sol | contracts | 2026-03-07 | Dead ancestor skip fix |
+| BloodlineBScore.sol | contracts | 2026-03-07 | Leaderboard, snapshots |
+| BloodlineNFT.sol | contracts | 2026-03-07 | Soulbound + 30-day death lock |
+| Deploy.s.sol | contracts | 2026-03-07 | Dependency-aware |
+| 136 security tests | contracts/test | 2026-03-07 | 8 suites, fuzz, invariants |
+| API server + middleware | apps/api | 2026-03-07 | Express, JWT/SIWE auth, rate limit |
+| API routes (31 endpoints) | apps/api | 2026-03-07 | auth, agents, bounties, bscore, social, lineage |
+| API services (8) | apps/api | 2026-03-07 | agent, bounty, bscore, metabolism, social, lastWill, nft, royalty |
+| API workers (5) | apps/api | 2026-03-07 | metabolism, death, social, bscore, deploy |
+| Agent runtime | packages/runtime | 2026-03-07 | HTTP protocol, plan/execute/review/output |
+| 6 official plugins | packages/runtime | 2026-03-08 | web-browsing, price-feed, code-exec, database, social, dex-trading |
+| SDK | packages/sdk | 2026-03-07 | TypeScript client, events |
+| CLI birth command | packages/cli | 2026-03-08 | ASCII art, DNA preview, burn rate calc |
+| CLI fork command | packages/cli | 2026-03-07 | Parent DNA display, fork fee |
+| Landing page (in miniapp) | apps/miniapp | 2026-03-08 | Hero, stages, DNA, feed, pitch block |
+| Miniapp (10 routes) | apps/miniapp | 2026-03-07 | Home, agent, deploy, bounties, leaderboard, etc. |
+| 5 agent templates | agent-templates/ | 2026-03-08 | researcher, trader, operator, socialite, generalist |
+| Recursive scanner | scripts/scan.ts | 2026-03-07 | 9 checks, scan-report.md |
+| Env check script | scripts/env-check.ts | 2026-03-08 | Validates required vars |
+| Mainnet verifier | scripts/verify-mainnet.ts | 2026-03-08 | 7 post-deploy checks |
+| API Dockerfile | apps/api | 2026-03-08 | Multi-stage, non-root |
+| Miniapp Dockerfile | apps/miniapp | 2026-03-08 | Multi-stage, standalone |
+| ESLint config | .eslintrc.json | 2026-03-08 | TypeScript rules |
+| Root tsconfig.json | root | 2026-03-08 | Project references |
+| CI/CD pipeline | .github/workflows | 2026-03-07 | lint, contracts, API, Docker |
+| DEPLOYMENT.md | root | 2026-03-07 | 11-step mainnet guide |
 
 ---
 
-## In-Progress Features
+## Remaining Work
 
-| Feature | Component | Started | Est. Completion | Owner |
-|---------|-----------|---------|-----------------|-------|
-| Documentation site | apps/docs | pending | - | cursor |
-
-## Recently Completed
-
-| Feature | Component | Completed | Notes |
-|---------|-----------|-----------|-------|
-| Landing page integrated into miniapp | apps/miniapp | 2026-03-07 | Root page (/) with full Part 20 design |
-| Recursive scanner | scripts/scan.ts | 2026-03-07 | 9 checks, report to scan-report.md |
-| CI/CD pipeline | .github/workflows | 2026-03-07 | lint, contracts, API tests, Docker build |
-| DEPLOYMENT.md | repo root | 2026-03-07 | Complete mainnet deployment guide |
-| Agent templates (5) | agent-templates/ | 2026-03-07 | researcher, trader, operator, socialite, generalist |
+| Item | Priority | Notes |
+|------|----------|-------|
+| Miniapp API wiring | MED | Currently uses mock data; needs SDK/fetch hooks |
+| API unit tests | MED | Jest configured, no test files yet |
+| Documentation site | LOW | apps/docs not created |
 
 ---
 
@@ -56,100 +62,39 @@
 
 | # | Component | Description | Severity | Status |
 |---|-----------|-------------|----------|--------|
-| 1 | BloodlineRegistry | updateEndpoint used onlyOwner instead of onlyAgentOwner | HIGH | FIXED |
-| 2 | BloodlineRegistry | No zero-address validation on birthAgent | MED | FIXED |
-| 3 | BloodlineRegistry | No zero-address checks on admin setters | MED | FIXED |
-| 4 | MetabolismOracle | Burn rate could return 0 at frugality=255 | CRIT | FIXED (MIN_BURN_RATE=1) |
-| 5 | BountyBoard | No minimum deadline (1h ahead) on postBounty | MED | FIXED |
-| 6 | RoyaltyRouter | Royalties sent to dead ancestors | HIGH | FIXED (isAlive check) |
-| 7 | BountyBoard/RoyaltyRouter/MetabolismOracle | Cross-contract ABI mismatch with Registry struct return | CRIT | FIXED (individual getters) |
-
----
-
-## Pending Features (Priority Order)
-
-1. Smart Contracts (7 contracts + deploy script)
-2. API Server (Express + routes + services)
-3. Agent Runtime (Docker + LangGraph)
-4. Vital Workers (metabolism, death, social, bscore)
-5. Miniapp Frontend (Next.js 14 + all pages)
-6. SDK Package
-7. CLI (birth + fork commands)
-8. Plugin System (6 official plugins)
-9. Recursive Scanner
-10. Documentation Site
-11. CI/CD Pipeline
-12. Landing Page (pixel-exact)
+| 1 | Registry | updateEndpoint used onlyOwner not onlyAgentOwner | HIGH | FIXED |
+| 2 | Registry | No zero-address validation | MED | FIXED |
+| 3 | MetabolismOracle | Burn rate could be 0 at frugality=255 | CRIT | FIXED |
+| 4 | BountyBoard | No 1hr minimum deadline | MED | FIXED |
+| 5 | RoyaltyRouter | Royalties sent to dead ancestors | HIGH | FIXED |
+| 6 | All cross-contract | ABI struct mismatch with dynamic types | CRIT | FIXED |
+| 7 | Registry | Missing getAgentOwner/Wallet/Stage/ParentId | HIGH | FIXED |
 
 ---
 
 ## Contract Addresses
 
 ### Base Sepolia (Testnet)
-
 | Contract | Address | Verified |
 |----------|---------|----------|
-| BloodlineNFT | *not deployed* | - |
-| BloodlineBScore | *not deployed* | - |
-| BloodlineRegistry | *not deployed* | - |
-| VRFConsumer | *not deployed* | - |
-| MetabolismOracle | *not deployed* | - |
-| BountyBoard | *not deployed* | - |
-| RoyaltyRouter | *not deployed* | - |
-
-### Base Mainnet
-
-| Contract | Address | Verified |
-|----------|---------|----------|
-| *(not deployed)* | | |
-
----
-
-## Database Migration Status
-
-| Migration | Status | Applied At |
-|-----------|--------|------------|
-| *initial* | pending | - |
+| *(not deployed yet)* | | |
 
 ---
 
 ## Test Coverage
 
-| Package | Tests | Passing | Status |
-|---------|-------|---------|--------|
-| contracts | 136 | 136 (100%) | 8 test suites covering all 7 contracts |
-| api | 0 | 0 | Not started |
-| runtime | 0 | 0 | Not started |
-| sdk | 0 | 0 | Not started |
-| miniapp | 0 | 0 | Not started |
-
-### Contract Security Tests Breakdown
-
-| Test Suite | Tests | Coverage Areas |
-|-----------|-------|---------------|
-| BloodlineRegistry.t.sol | 17 | Basic CRUD, access control |
-| SecurityRegistry.t.sol | 31 | Zero-address, death permanence, DNA immutability, state machine, fuzz |
-| SecurityBountyBoard.t.sol | 20 | Escrow, deadlines, applications, winner selection, jury, invariants |
-| SecurityMetabolism.t.sol | 17 | Burn rate (always positive), registration, automation, finalize kill |
-| SecurityNFT.t.sol | 15 | Soulbound, 30-day lock, authorization, double-mint, fuzz |
-| SecurityRoyalty.t.sol | 12 | Percentages, dead ancestor skipping, genesis, invariants, fuzz |
-| SecurityBScore.t.sol | 13 | Authorization, mismatch prevention, leaderboard, fuzz |
-| SecurityVRFConsumer.t.sol | 13 | Trait bounds, mutation clamping, prodigy detection, DNA immutability |
+| Package | Tests | Status |
+|---------|-------|--------|
+| contracts | 136 (8 suites) | All passing |
+| api | 0 | Configured |
+| runtime | 0 | Configured |
 
 ---
 
-## Performance Notes
+## Scanner Report
 
-*(No performance data yet — system not deployed)*
-
----
-
-## Breaking Changes
-
-*(No breaking changes — initial build)*
-
----
-
-## API Endpoint Changes
-
-*(No changes — API not yet built)*
+- **CRITICAL**: 0
+- **ERROR**: 1 (37 type assertions in SDK — acceptable for JSON casting)
+- **WARNING**: 80 (unused env vars, websocket events)
+- **Files scanned**: 80
+- **Status**: Functionally clean

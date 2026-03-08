@@ -25,6 +25,15 @@ export class PluginManager {
     } else if (pluginId === 'code-exec-v1' || pluginId === 'code-exec') {
       const { CodeExecPlugin } = await import('./code-exec');
       plugin = new CodeExecPlugin();
+    } else if (pluginId === 'database-v1' || pluginId === 'database') {
+      const db = await import('./database');
+      plugin = { id: 'database-v1', manifest: db.manifest, execute: db.execute };
+    } else if (pluginId === 'social-v1' || pluginId === 'social') {
+      const social = await import('./social');
+      plugin = { id: 'social-v1', manifest: social.manifest, execute: social.execute };
+    } else if (pluginId === 'dex-trading-v1' || pluginId === 'dex-trading') {
+      const dex = await import('./dex-trading');
+      plugin = { id: 'dex-trading-v1', manifest: dex.manifest, execute: dex.execute };
     }
 
     if (plugin) {
