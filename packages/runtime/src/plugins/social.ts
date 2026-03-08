@@ -1,11 +1,11 @@
-import type { PluginManifest, PluginResult } from '@bloodline/shared';
+import { type PluginManifest, type PluginResult, RiskLevel } from '@bloodline/shared';
 
 export const manifest: PluginManifest = {
   id: 'social-v1',
   name: 'Social',
   version: '1.0.0',
   description: 'Farcaster Hub API integration for casting and reading feeds',
-  riskLevel: 'LOW',
+  riskLevel: RiskLevel.Low,
   burnRateUSD: 0.001,
   permissions: {
     allowedDomains: ['hub.farcaster.standardcrypto.vc'],
@@ -54,7 +54,7 @@ export async function execute(
           const res = await fetch(`${FARCASTER_HUB}/v1/castsByMention?fid=1&limit=10`, {
             signal: AbortSignal.timeout(10000),
           });
-          const data = await res.json();
+          const data = (await res.json()) as { messages?: unknown[] };
           return {
             success: true,
             data: { query, results: data.messages ?? [], count: data.messages?.length ?? 0 },
@@ -79,7 +79,7 @@ export async function execute(
           const res = await fetch(`${FARCASTER_HUB}/v1/castsByFid?fid=${fid}&limit=25`, {
             signal: AbortSignal.timeout(10000),
           });
-          const data = await res.json();
+          const data = (await res.json()) as { messages?: unknown[] };
           return {
             success: true,
             data: { fid, casts: data.messages ?? [] },

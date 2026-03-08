@@ -1,11 +1,11 @@
-import type { PluginManifest, PluginResult } from '@bloodline/shared';
+import { type PluginManifest, type PluginResult, RiskLevel } from '@bloodline/shared';
 
 export const manifest: PluginManifest = {
   id: 'database-v1',
   name: 'Database',
   version: '1.0.0',
   description: 'Scoped key-value and SQL query access for agent data storage',
-  riskLevel: 'MEDIUM',
+  riskLevel: RiskLevel.Medium,
   burnRateUSD: 0.002,
   permissions: {
     allowedDomains: [],

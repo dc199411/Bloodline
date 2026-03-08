@@ -1,11 +1,11 @@
-import type { PluginManifest, PluginResult } from '@bloodline/shared';
+import { type PluginManifest, type PluginResult, RiskLevel } from '@bloodline/shared';
 
 export const manifest: PluginManifest = {
   id: 'dex-trading-v1',
   name: 'DEX Trading',
   version: '1.0.0',
   description: 'Uniswap V3 and Aerodrome DEX trading on Base',
-  riskLevel: 'HIGH',
+  riskLevel: RiskLevel.High,
   burnRateUSD: 0.02,
   permissions: {
     allowedDomains: ['api.coingecko.com', 'api.dexscreener.com'],
@@ -38,7 +38,7 @@ export async function execute(
             `${DEXSCREENER_API}/search?q=${tokenIn}%20${tokenOut}`,
             { signal: AbortSignal.timeout(10000) },
           );
-          const data = await res.json();
+          const data = (await res.json()) as { pairs?: Array<{ priceNative: string; dexId: string; pairAddress: string }> };
           const pair = data.pairs?.[0];
 
           return {
