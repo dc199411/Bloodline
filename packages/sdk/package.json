@@ -1,0 +1,19 @@
+{
+  "name": "@bloodline/sdk",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "viem": "^2.21.0",
+    "@bloodline/shared": "workspace:*",
+    "socket.io-client": "^4.8.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
