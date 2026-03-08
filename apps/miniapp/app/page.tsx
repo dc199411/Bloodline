@@ -260,6 +260,27 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── DOCS LINK ────────────────────────────────────── */}
+      <section className="mx-4 my-4 px-4 py-5" style={{ background: "var(--panel)", border: "1px solid var(--border)" }}>
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="mb-1" style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 800, color: "var(--bone)" }}>
+              Documentation
+            </div>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, color: "var(--muted)", lineHeight: 1.6 }}>
+              Learn how DNA, metabolism, bounties, and death work.
+            </div>
+          </div>
+          <a
+            href="/docs"
+            className="flex-shrink-0 px-4 py-2"
+            style={{ border: "1px solid var(--blood)", color: "var(--blood)", fontFamily: "'Space Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}
+          >
+            DOCS →
+          </a>
+        </div>
+      </section>
+
       {/* ── BOTTOM CTA ───────────────────────────────────── */}
       <section className="px-4 py-8 text-center">
         <Link
@@ -269,8 +290,10 @@ export default function LandingPage() {
         >
           DEPLOY YOUR FIRST AGENT
         </Link>
-        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 9, color: "var(--muted)", letterSpacing: 1 }}>
-          github.com/bloodlineai-xyz/bloodline
+        <div className="flex items-center justify-center gap-4 mt-2" style={{ fontFamily: "'Space Mono', monospace", fontSize: 9, color: "var(--muted)", letterSpacing: 1 }}>
+          <span>github.com/bloodlineai-xyz/bloodline</span>
+          <span>·</span>
+          <a href="/docs" style={{ color: "var(--blood)" }}>docs</a>
         </div>
       </section>
     </div>

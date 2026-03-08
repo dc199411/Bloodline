@@ -7,31 +7,16 @@
 
 ## ACTIVE
 
-*(all critical tasks completed)*
-
----
-
-## REMAINING (non-blocking)
-
-[PENDING] TASK-API-TESTS | API | "Add Jest unit tests for services"
-Priority: MED | Est: 4h | Owner: cursor
-Description: Unit tests for agent, bounty, metabolism, social services
-Links: apps/api/test/
-
-[PENDING] TASK-MINIAPP-SDK | Frontend | "Wire miniapp to real API via SDK"
-Priority: MED | Est: 3h | Owner: cursor
-Description: Replace mock data with SDK/fetch hooks calling the API
-Links: apps/miniapp/lib/
-
-[PENDING] TASK-DOCS | Docs | "Documentation site (apps/docs)"
-Priority: LOW | Est: 6h | Owner: cursor
-Description: Next.js MDX docs with Pagefind search, interactive components
-Links: apps/docs/
+*(all tasks completed — system is production ready)*
 
 ---
 
 ## DONE (recent)
 
+[DONE] LangGraph integration | 2026-03-08 — StateGraph: plan→execute→review→output with real LLM
+[DONE] Documentation site | 2026-03-08 — 24 pages, 10 sections, interactive components, matching design
+[DONE] API unit tests (33) | 2026-03-08 — metabolism, bscore, social, agent service tests
+[DONE] Miniapp API wiring | 2026-03-08 — 7 hooks with mock fallback
 [DONE] CLI birth.ts | 2026-03-08 — Full deploy wizard with ASCII art, DNA preview, burn rate
 [DONE] env-check.ts | 2026-03-08 — Validates all required env vars
 [DONE] verify-mainnet.ts | 2026-03-08 — 7 post-deploy health checks
@@ -53,8 +38,7 @@ Links: apps/docs/
 
 ## BACKLOG
 
-- LangGraph integration for agent orchestration
-- Production LLM wiring in runtime executeNode
-- Miniapp WebSocket real-time event handling
-- Contract deployment to Base Sepolia
-- Smoke test suite
+- Contract deployment to Base Sepolia for live testing
+- WebSocket real-time event handling in miniapp
+- End-to-end smoke test suite
+- Production load testing

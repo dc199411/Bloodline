@@ -33,7 +33,9 @@
 | SDK | packages/sdk | 2026-03-07 | TypeScript client, events |
 | CLI birth command | packages/cli | 2026-03-08 | ASCII art, DNA preview, burn rate calc |
 | CLI fork command | packages/cli | 2026-03-07 | Parent DNA display, fork fee |
-| Landing page (in miniapp) | apps/miniapp | 2026-03-08 | Hero, stages, DNA, feed, pitch block |
+| Documentation site | apps/docs | 2026-03-08 | 24 pages, 10 sections, interactive components |
+| LangGraph runtime | packages/runtime | 2026-03-08 | StateGraph: plan→execute→review→output with LLM |
+| Landing page (in miniapp) | apps/miniapp | 2026-03-08 | Hero, stages, DNA, feed, pitch block, docs link |
 | Miniapp (10 routes) | apps/miniapp | 2026-03-07 | Home, agent, deploy, bounties, leaderboard, etc. |
 | 5 agent templates | agent-templates/ | 2026-03-08 | researcher, trader, operator, socialite, generalist |
 | Recursive scanner | scripts/scan.ts | 2026-03-07 | 9 checks, scan-report.md |
@@ -52,7 +54,7 @@
 
 | Item | Priority | Notes |
 |------|----------|-------|
-| Documentation site | LOW | apps/docs not created (optional) |
+| *(none — all features complete)* | | |
 
 ---
 
@@ -98,3 +100,24 @@
 - **Status**: Production ready
 
 ## Total Test Count: 169 (136 contract + 33 API)
+
+## Architecture Completeness
+
+| Component | Files | Status |
+|-----------|-------|--------|
+| Smart Contracts (7) | 7 .sol + deploy script | Complete |
+| Contract Tests (8 suites) | 8 .t.sol | 136 passing |
+| API Routes (6) | 6 route files, 31 endpoints | Complete |
+| API Services (8) | 8 service files | Complete |
+| API Workers (5) | 5 worker files | Complete |
+| API Tests (4 suites) | 4 test files | 33 passing |
+| Agent Runtime | agent-core + 6 plugins | LangGraph integrated |
+| SDK | 5 modules | Complete |
+| CLI | birth + fork | Complete |
+| Miniapp (10 routes) | Landing + 9 app pages | API-wired with mock fallback |
+| Docs Site (24 pages) | 10 sections + interactive components | Complete |
+| Agent Templates (5) | 5 × 4 files each | Complete |
+| Scanner (9 checks) | scan.ts | Operational |
+| CI/CD | GitHub Actions | 4 jobs |
+| Infra | Docker Compose + 3 Dockerfiles | Complete |
+| Scripts | env-check, verify-mainnet, scan | Complete |
