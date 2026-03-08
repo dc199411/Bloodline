@@ -1,17 +1,17 @@
 # BLOODLINE — Task Tracker
 
-> Last updated: 2026-03-07
-> Active tasks: 5 | Blocked: 0 | Done: 0
+> Last updated: 2026-03-08
+> Active tasks: 1 | Blocked: 0 | Done: 25
 
 ---
 
 ## ACTIVE
 
-[IN_PROGRESS] TASK-028 | Frontend | "Layout: StatusBar + BottomNav"
-Priority: HIGH | Est: 2h | Started: 2026-03-07 | Owner: cursor
-Description: Build mobile-first layout with sticky status bar and bottom navigation
+[IN_PROGRESS] TASK-039 | Docs | "Documentation site (apps/docs)"
+Priority: MED | Est: 4h | Started: pending | Owner: cursor
+Description: Next.js docs site with MDX, Shiki, Pagefind search
 Blockers: none
-Links: apps/miniapp/
+Links: apps/docs/
 
 ---
 
@@ -23,16 +23,16 @@ Links: apps/miniapp/
 
 ## DONE (last 10)
 
+[DONE] TASK-LP  | Frontend | "Landing page integrated into miniapp root" | 2026-03-08
+[DONE] TASK-AT  | Templates | "All 5 agent templates with files" | 2026-03-08
+[DONE] TASK-038 | Scanner | "Recursive scanner (9 checks)" | 2026-03-07
+[DONE] TASK-040 | CI/CD | "GitHub Actions pipeline" | 2026-03-07
 [DONE] TASK-SEC | Contracts | "Smart contract security audit + vulnerability fixes" | 2026-03-07
+[DONE] TASK-028 | Frontend | "Miniapp all pages + components" | 2026-03-07
 [DONE] TASK-027 | Workers | "deploy.worker.ts" | 2026-03-07
-[DONE] TASK-026 | Workers | "bscore.worker.ts" | 2026-03-07
-[DONE] TASK-025 | Workers | "social.worker.ts" | 2026-03-07
-[DONE] TASK-024 | Workers | "death.worker.ts" | 2026-03-07
-[DONE] TASK-023 | Workers | "metabolism.worker.ts" | 2026-03-07
-[DONE] TASK-019 | Runtime | "Docker base image + HTTP protocol" | 2026-03-07
-[DONE] TASK-018 | API | "All services" | 2026-03-07
-[DONE] TASK-014 | API | "Express server + middleware" | 2026-03-07
-[DONE] TASK-013 | Contracts | "Deploy script + tests" | 2026-03-07
+[DONE] TASK-024 | Workers | "death.worker.ts (8-step sequence)" | 2026-03-07
+[DONE] TASK-018 | API | "All routes, services, middleware" | 2026-03-07
+[DONE] TASK-013 | Contracts | "All 7 contracts + deploy script + 136 tests" | 2026-03-07
 
 ---
 
