@@ -1,0 +1,186 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800;900&display=swap');
+
+:root {
+  --blood: #FF1A1A;
+  --deep: #080808;
+  --carbon: #101010;
+  --ash: #1A1A1A;
+  --panel: #141414;
+  --border: #222222;
+  --bone: #E8E0D5;
+  --muted: #555555;
+  --live: #00FF87;
+  --dying: #FF6B00;
+  --gold: #FFD700;
+  --blue: #4FC3F7;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--deep);
+  color: var(--bone);
+  font-family: 'Space Mono', monospace;
+  min-height: 100dvh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,26,26,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,26,26,0.03) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--deep);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+/* Content typography */
+.docs-content h1 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 900;
+  font-size: 36px;
+  color: var(--bone);
+  letter-spacing: -1px;
+  margin-bottom: 24px;
+}
+
+.docs-content h2 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 24px;
+  color: var(--bone);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+  margin-top: 48px;
+  margin-bottom: 20px;
+}
+
+.docs-content h3 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--bone);
+  margin-top: 32px;
+  margin-bottom: 12px;
+}
+
+.docs-content p {
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.9;
+  margin-bottom: 16px;
+}
+
+.docs-content ul,
+.docs-content ol {
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.9;
+  margin-bottom: 16px;
+  padding-left: 24px;
+}
+
+.docs-content li {
+  margin-bottom: 6px;
+}
+
+.docs-content code:not(pre code) {
+  background: var(--ash);
+  color: var(--blood);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-family: 'Space Mono', monospace;
+}
+
+.docs-content pre {
+  background: var(--carbon);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.docs-content pre code {
+  background: none;
+  color: var(--bone);
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.docs-content a {
+  color: var(--blood);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.docs-content a:hover {
+  border-bottom-color: var(--blood);
+}
+
+.docs-content strong {
+  color: var(--bone);
+  font-weight: 700;
+}
+
+.docs-content hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 32px 0;
+}
+
+.docs-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+}
+
+.docs-content th {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--border);
+  color: var(--bone);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.docs-content td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+}
