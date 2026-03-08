@@ -7,35 +7,11 @@
 
 ## ACTIVE
 
-[IN_PROGRESS] TASK-001 | Foundation | "Initialize pnpm monorepo with Turborepo"
-Priority: HIGH | Est: 1h | Started: 2026-03-07 | Owner: cursor
-Description: Set up pnpm workspace, turbo.json, all package scaffolds
+[IN_PROGRESS] TASK-028 | Frontend | "Layout: StatusBar + BottomNav"
+Priority: HIGH | Est: 2h | Started: 2026-03-07 | Owner: cursor
+Description: Build mobile-first layout with sticky status bar and bottom navigation
 Blockers: none
-Links: package.json, pnpm-workspace.yaml, turbo.json
-
-[IN_PROGRESS] TASK-002 | Foundation | "Create .env.example with all variables"
-Priority: HIGH | Est: 0.5h | Started: 2026-03-07 | Owner: cursor
-Description: Document every environment variable from the master spec
-Blockers: none
-Links: .env.example
-
-[IN_PROGRESS] TASK-003 | Foundation | "Build shared types package"
-Priority: HIGH | Est: 1h | Started: 2026-03-07 | Owner: cursor
-Description: DNA, Agent, Bounty, BScore, LifeStage TypeScript types
-Blockers: none
-Links: packages/shared/
-
-[IN_PROGRESS] TASK-004 | Foundation | "Create Prisma schema"
-Priority: HIGH | Est: 1h | Started: 2026-03-07 | Owner: cursor
-Description: All database tables per Part 4 spec
-Blockers: none
-Links: apps/api/prisma/schema.prisma
-
-[IN_PROGRESS] TASK-005 | Foundation | "Docker compose for local dev"
-Priority: HIGH | Est: 0.5h | Started: 2026-03-07 | Owner: cursor
-Description: PostgreSQL, Redis, Anvil fork containers
-Blockers: none
-Links: infra/docker-compose.yml
+Links: apps/miniapp/
 
 ---
 
@@ -47,7 +23,16 @@ Links: infra/docker-compose.yml
 
 ## DONE (last 10)
 
-*(none yet)*
+[DONE] TASK-SEC | Contracts | "Smart contract security audit + vulnerability fixes" | 2026-03-07
+[DONE] TASK-027 | Workers | "deploy.worker.ts" | 2026-03-07
+[DONE] TASK-026 | Workers | "bscore.worker.ts" | 2026-03-07
+[DONE] TASK-025 | Workers | "social.worker.ts" | 2026-03-07
+[DONE] TASK-024 | Workers | "death.worker.ts" | 2026-03-07
+[DONE] TASK-023 | Workers | "metabolism.worker.ts" | 2026-03-07
+[DONE] TASK-019 | Runtime | "Docker base image + HTTP protocol" | 2026-03-07
+[DONE] TASK-018 | API | "All services" | 2026-03-07
+[DONE] TASK-014 | API | "Express server + middleware" | 2026-03-07
+[DONE] TASK-013 | Contracts | "Deploy script + tests" | 2026-03-07
 
 ---
 

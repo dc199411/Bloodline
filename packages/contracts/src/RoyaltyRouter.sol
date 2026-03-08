@@ -8,15 +8,10 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 interface IBloodlineRegistryRoyalty {
     enum LifeStage { Unborn, Alive, Thriving, Dead, Ascended }
 
-    struct Agent {
-        uint256 agentId;
-        address ownerAddress;
-        address agentWallet;
-        uint256 parentId;
-        LifeStage stage;
-    }
-
-    function getAgent(uint256 agentId) external view returns (Agent memory);
+    function getAgentWallet(uint256 agentId) external view returns (address);
+    function getAgentOwner(uint256 agentId) external view returns (address);
+    function getParentId(uint256 agentId) external view returns (uint256);
+    function getAgentStage(uint256 agentId) external view returns (LifeStage);
     function getChildren(uint256 agentId) external view returns (uint256[] memory);
     function isAlive(uint256 agentId) external view returns (bool);
 }
@@ -75,7 +70,7 @@ contract RoyaltyRouter is Ownable, ReentrancyGuard {
             "RoyaltyRouter: transfer failed"
         );
 
-        IBloodlineRegistryRoyalty.Agent memory agent = registry.getAgent(agentId);
+        address agentWallet = registry.getAgentWallet(agentId);
 
         uint256 protocolFee = (amount * PROTOCOL_FEE_BPS) / BPS_DENOMINATOR;
         uint256 parentShare;
@@ -88,32 +83,39 @@ contract RoyaltyRouter is Ownable, ReentrancyGuard {
             remainder -= protocolFee;
         }
 
-        uint256 parentId = agent.parentId;
+        uint256 parentId = registry.getParentId(agentId);
         if (parentId != 0) {
             parentShare = (amount * CHILD_ROYALTY_BPS) / BPS_DENOMINATOR;
-            _payRoyalty(agentId, parentId, parentShare);
-            remainder -= parentShare;
+            if (_payRoyalty(agentId, parentId, parentShare)) {
+                remainder -= parentShare;
+            } else {
+                parentShare = 0;
+            }
 
-            IBloodlineRegistryRoyalty.Agent memory parent = registry.getAgent(parentId);
-            uint256 grandparentId = parent.parentId;
+            uint256 grandparentId = registry.getParentId(parentId);
             if (grandparentId != 0) {
                 grandparentShare = (amount * GRANDCHILD_ROYALTY_BPS) / BPS_DENOMINATOR;
-                _payRoyalty(agentId, grandparentId, grandparentShare);
-                remainder -= grandparentShare;
+                if (_payRoyalty(agentId, grandparentId, grandparentShare)) {
+                    remainder -= grandparentShare;
+                } else {
+                    grandparentShare = 0;
+                }
 
-                IBloodlineRegistryRoyalty.Agent memory grandparent = registry.getAgent(grandparentId);
-                uint256 greatGrandparentId = grandparent.parentId;
+                uint256 greatGrandparentId = registry.getParentId(grandparentId);
                 if (greatGrandparentId != 0) {
                     greatGrandparentShare = (amount * GREAT_GRANDCHILD_ROYALTY_BPS) / BPS_DENOMINATOR;
-                    _payRoyalty(agentId, greatGrandparentId, greatGrandparentShare);
-                    remainder -= greatGrandparentShare;
+                    if (_payRoyalty(agentId, greatGrandparentId, greatGrandparentShare)) {
+                        remainder -= greatGrandparentShare;
+                    } else {
+                        greatGrandparentShare = 0;
+                    }
                 }
             }
         }
 
         if (remainder > 0) {
             require(
-                usdc.transfer(agent.agentWallet, remainder),
+                usdc.transfer(agentWallet, remainder),
                 "RoyaltyRouter: agent payout failed"
             );
         }
@@ -129,13 +131,14 @@ contract RoyaltyRouter is Ownable, ReentrancyGuard {
     }
 
     function distributeLegacyPool(uint256 deadAgentId) external nonReentrant onlyAuthorized {
-        IBloodlineRegistryRoyalty.Agent memory agent = registry.getAgent(deadAgentId);
+        IBloodlineRegistryRoyalty.LifeStage stage = registry.getAgentStage(deadAgentId);
         require(
-            agent.stage == IBloodlineRegistryRoyalty.LifeStage.Dead,
+            stage == IBloodlineRegistryRoyalty.LifeStage.Dead,
             "RoyaltyRouter: agent not dead"
         );
 
-        uint256 balance = usdc.balanceOf(agent.agentWallet);
+        address deadWallet = registry.getAgentWallet(deadAgentId);
+        uint256 balance = usdc.balanceOf(deadWallet);
         require(balance > 0, "RoyaltyRouter: no legacy balance");
 
         uint256[] memory children = registry.getChildren(deadAgentId);
@@ -149,7 +152,7 @@ contract RoyaltyRouter is Ownable, ReentrancyGuard {
 
         if (livingCount == 0) {
             require(
-                usdc.transferFrom(agent.agentWallet, protocolTreasury, balance),
+                usdc.transferFrom(deadWallet, protocolTreasury, balance),
                 "RoyaltyRouter: treasury transfer failed"
             );
             emit LegacyDistributed(deadAgentId, balance, 0);
@@ -161,9 +164,9 @@ contract RoyaltyRouter is Ownable, ReentrancyGuard {
 
         for (uint256 i = 0; i < children.length; i++) {
             if (registry.isAlive(children[i])) {
-                IBloodlineRegistryRoyalty.Agent memory child = registry.getAgent(children[i]);
+                address childWallet = registry.getAgentWallet(children[i]);
                 require(
-                    usdc.transferFrom(agent.agentWallet, child.agentWallet, share),
+                    usdc.transferFrom(deadWallet, childWallet, share),
                     "RoyaltyRouter: legacy transfer failed"
                 );
                 distributed++;
@@ -173,16 +176,19 @@ contract RoyaltyRouter is Ownable, ReentrancyGuard {
         emit LegacyDistributed(deadAgentId, balance, distributed);
     }
 
-    function _payRoyalty(uint256 fromAgentId, uint256 toAgentId, uint256 amount) internal {
-        if (amount == 0) return;
+    function _payRoyalty(uint256 fromAgentId, uint256 toAgentId, uint256 amount) internal returns (bool paid) {
+        if (amount == 0) return false;
 
-        IBloodlineRegistryRoyalty.Agent memory ancestor = registry.getAgent(toAgentId);
+        if (!registry.isAlive(toAgentId)) return false;
+
+        address ancestorWallet = registry.getAgentWallet(toAgentId);
         require(
-            usdc.transfer(ancestor.agentWallet, amount),
+            usdc.transfer(ancestorWallet, amount),
             "RoyaltyRouter: royalty transfer failed"
         );
 
-        emit RoyaltyPaid(fromAgentId, toAgentId, ancestor.agentWallet, amount);
+        emit RoyaltyPaid(fromAgentId, toAgentId, ancestorWallet, amount);
+        return true;
     }
 
     function setRegistry(address _registry) external onlyOwner {

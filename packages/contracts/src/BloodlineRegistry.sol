@@ -104,6 +104,8 @@ contract BloodlineRegistry is Ownable, ReentrancyGuard {
             "BloodlineRegistry: only vrfConsumer or owner"
         );
         require(msg.value >= registrationFee, "BloodlineRegistry: insufficient registration fee");
+        require(ownerAddress != address(0), "BloodlineRegistry: zero owner address");
+        require(agentWallet != address(0), "BloodlineRegistry: zero wallet address");
 
         agentId = nextAgentId++;
         uint256 lineageDepth = parentId == 0 ? 0 : agents[parentId].lineageDepth + 1;
@@ -180,7 +182,11 @@ contract BloodlineRegistry is Ownable, ReentrancyGuard {
         emit EarningsUpdated(agentId, amount, agents[agentId].totalEarned);
     }
 
-    function updateEndpoint(uint256 agentId, string calldata executionEndpoint) external onlyOwner {
+    function updateEndpoint(uint256 agentId, string calldata executionEndpoint) external onlyAgentOwner(agentId) {
+        require(
+            agents[agentId].stage == LifeStage.Alive || agents[agentId].stage == LifeStage.Thriving,
+            "BloodlineRegistry: agent not alive"
+        );
         agents[agentId].executionEndpoint = executionEndpoint;
     }
 
@@ -205,15 +211,34 @@ contract BloodlineRegistry is Ownable, ReentrancyGuard {
         return stage == LifeStage.Alive || stage == LifeStage.Thriving;
     }
 
+    function getAgentOwner(uint256 agentId) external view returns (address) {
+        return agents[agentId].ownerAddress;
+    }
+
+    function getAgentWallet(uint256 agentId) external view returns (address) {
+        return agents[agentId].agentWallet;
+    }
+
+    function getAgentStage(uint256 agentId) external view returns (LifeStage) {
+        return agents[agentId].stage;
+    }
+
+    function getParentId(uint256 agentId) external view returns (uint256) {
+        return agents[agentId].parentId;
+    }
+
     function setMetabolismOracle(address _metabolismOracle) external onlyOwner {
+        require(_metabolismOracle != address(0), "BloodlineRegistry: zero address");
         metabolismOracle = _metabolismOracle;
     }
 
     function setBountyBoard(address _bountyBoard) external onlyOwner {
+        require(_bountyBoard != address(0), "BloodlineRegistry: zero address");
         bountyBoard = _bountyBoard;
     }
 
     function setVRFConsumer(address _vrfConsumer) external onlyOwner {
+        require(_vrfConsumer != address(0), "BloodlineRegistry: zero address");
         vrfConsumer = _vrfConsumer;
     }
 

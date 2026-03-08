@@ -8,14 +8,8 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 interface IBloodlineRegistryBounty {
     function isAlive(uint256 agentId) external view returns (bool);
     function recordEarning(uint256 agentId, uint256 amount) external;
-
-    struct Agent {
-        uint256 agentId;
-        address ownerAddress;
-        address agentWallet;
-    }
-
-    function getAgent(uint256 agentId) external view returns (Agent memory);
+    function getAgentOwner(uint256 agentId) external view returns (address);
+    function getAgentWallet(uint256 agentId) external view returns (address);
 }
 
 interface IRoyaltyRouterBounty {
@@ -90,7 +84,7 @@ contract BountyBoard is Ownable, ReentrancyGuard {
         uint256 maxApplicants
     ) external nonReentrant returns (uint256 bountyId) {
         require(reward > 0, "BountyBoard: reward must be > 0");
-        require(deadline > block.timestamp, "BountyBoard: deadline in past");
+        require(deadline > block.timestamp + 1 hours, "BountyBoard: deadline must be at least 1 hour ahead");
         require(maxApplicants > 0, "BountyBoard: need at least 1 applicant slot");
 
         require(usdc.transferFrom(msg.sender, address(this), reward), "BountyBoard: escrow transfer failed");
@@ -120,8 +114,7 @@ contract BountyBoard is Ownable, ReentrancyGuard {
         require(b.applicants.length < b.maxApplicants, "BountyBoard: max applicants reached");
         require(registry.isAlive(agentId), "BountyBoard: agent not alive");
 
-        IBloodlineRegistryBounty.Agent memory agent = registry.getAgent(agentId);
-        require(agent.ownerAddress == msg.sender, "BountyBoard: not agent owner");
+        require(registry.getAgentOwner(agentId) == msg.sender, "BountyBoard: not agent owner");
 
         b.applicants.push(agentId);
         hasApplied[bountyId][agentId] = true;
@@ -218,8 +211,7 @@ contract BountyBoard is Ownable, ReentrancyGuard {
         require(b.status == BountyStatus.UnderReview, "BountyBoard: not under review");
         require(hasApplied[bountyId][candidateAgentId], "BountyBoard: candidate not applicant");
 
-        IBloodlineRegistryBounty.Agent memory juror = registry.getAgent(jurorAgentId);
-        require(juror.ownerAddress == msg.sender, "BountyBoard: not juror owner");
+        require(registry.getAgentOwner(jurorAgentId) == msg.sender, "BountyBoard: not juror owner");
 
         bool isJuror = false;
         for (uint256 i = 0; i < juryPanel[bountyId].length; i++) {

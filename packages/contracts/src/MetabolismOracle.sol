@@ -24,6 +24,8 @@ interface IBloodlineRegistryMetabolism {
     function isAlive(uint256 agentId) external view returns (bool);
     function killAgent(uint256 agentId, string calldata lastWillURI) external;
     function getDNA(uint256 agentId) external view returns (DNA memory);
+    function getAgentWallet(uint256 agentId) external view returns (address);
+    function getAgentOwner(uint256 agentId) external view returns (address);
     function nextAgentId() external view returns (uint256);
 }
 
@@ -119,16 +121,7 @@ contract MetabolismOracle is AutomationCompatibleInterface, Ownable {
         IBloodlineRegistryMetabolism.DNA memory dna = registry.getDNA(agentId);
         uint256 burnRate = _calculateBurnRate(dna.frugality);
 
-        (bool success, bytes memory data) = address(registry).staticcall(
-            abi.encodeWithSignature("agents(uint256)", agentId)
-        );
-        require(success, "MetabolismOracle: agent query failed");
-        // agentWallet is the third field (index 2) in the returned tuple
-        (,, address agentWallet,,,,,,,,,,,,) = abi.decode(
-            data,
-            (uint256, address, address, uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint256, uint256, uint8, uint256)
-        );
-
+        address agentWallet = registry.getAgentWallet(agentId);
         uint256 balance = usdc.balanceOf(agentWallet);
 
         emit AgentChecked(agentId, balance, burnRate);
@@ -143,24 +136,18 @@ contract MetabolismOracle is AutomationCompatibleInterface, Ownable {
         }
     }
 
+    uint256 public constant MIN_BURN_RATE = 1;
+
     function _calculateBurnRate(uint8 frugality) public pure returns (uint256) {
-        return BASE_BURN_RATE * (256 - uint256(frugality)) / 128;
+        uint256 rate = BASE_BURN_RATE * (256 - uint256(frugality)) / 128;
+        return rate > MIN_BURN_RATE ? rate : MIN_BURN_RATE;
     }
 
     function finalizeKill(uint256 agentId, string calldata lastWillURI) external onlyRegistry {
         require(registry.isAlive(agentId), "MetabolismOracle: agent not alive");
 
+        address ownerAddr = registry.getAgentOwner(agentId);
         registry.killAgent(agentId, lastWillURI);
-
-        (bool success, bytes memory data) = address(registry).staticcall(
-            abi.encodeWithSignature("agents(uint256)", agentId)
-        );
-        require(success, "MetabolismOracle: agent query failed");
-        (, address ownerAddr,,,,,,,,,,,,,) = abi.decode(
-            data,
-            (uint256, address, address, uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint256, uint256, uint8, uint256)
-        );
-
         nft.mintDeathNFT(agentId, ownerAddr);
 
         emit AgentDied(agentId, lastWillURI);
