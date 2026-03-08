@@ -1,0 +1,108 @@
+name: BLOODLINE CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '20'
+  FOUNDRY_PROFILE: ci
+
+jobs:
+  lint-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run typecheck
+      - run: pnpm run lint
+
+  test-contracts:
+    name: Contract Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: foundry-rs/foundry-toolchain@v1
+      - working-directory: packages/contracts
+        run: forge build
+      - working-directory: packages/contracts
+        run: forge test -vvv
+      - working-directory: packages/contracts
+        run: forge fmt --check
+
+  test-api:
+    name: API Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: bloodline_test
+          POSTGRES_USER: bloodline
+          POSTGRES_PASSWORD: bloodline_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - name: Run API tests
+        env:
+          DATABASE_URL: postgresql://bloodline:bloodline_test@localhost:5432/bloodline_test
+          REDIS_URL: redis://localhost:6379
+        run: pnpm run test --filter=api
+
+  build-images:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [lint-typecheck, test-contracts, test-api]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: packages/runtime/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/agent-runtime:${{ github.sha }}
+            ghcr.io/${{ github.repository }}/agent-runtime:latest
+          platforms: linux/amd64,linux/arm64
