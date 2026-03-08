@@ -1,111 +1,60 @@
 # BLOODLINE — Task Tracker
 
 > Last updated: 2026-03-08
-> Active tasks: 1 | Blocked: 0 | Done: 25
+> Active tasks: 0 | Blocked: 0 | Done: 30+
 
 ---
 
 ## ACTIVE
 
-[IN_PROGRESS] TASK-039 | Docs | "Documentation site (apps/docs)"
-Priority: MED | Est: 4h | Started: pending | Owner: cursor
-Description: Next.js docs site with MDX, Shiki, Pagefind search
-Blockers: none
+*(all critical tasks completed)*
+
+---
+
+## REMAINING (non-blocking)
+
+[PENDING] TASK-API-TESTS | API | "Add Jest unit tests for services"
+Priority: MED | Est: 4h | Owner: cursor
+Description: Unit tests for agent, bounty, metabolism, social services
+Links: apps/api/test/
+
+[PENDING] TASK-MINIAPP-SDK | Frontend | "Wire miniapp to real API via SDK"
+Priority: MED | Est: 3h | Owner: cursor
+Description: Replace mock data with SDK/fetch hooks calling the API
+Links: apps/miniapp/lib/
+
+[PENDING] TASK-DOCS | Docs | "Documentation site (apps/docs)"
+Priority: LOW | Est: 6h | Owner: cursor
+Description: Next.js MDX docs with Pagefind search, interactive components
 Links: apps/docs/
 
 ---
 
-## BLOCKED
+## DONE (recent)
 
-*(none)*
-
----
-
-## DONE (last 10)
-
-[DONE] TASK-LP  | Frontend | "Landing page integrated into miniapp root" | 2026-03-08
-[DONE] TASK-AT  | Templates | "All 5 agent templates with files" | 2026-03-08
-[DONE] TASK-038 | Scanner | "Recursive scanner (9 checks)" | 2026-03-07
-[DONE] TASK-040 | CI/CD | "GitHub Actions pipeline" | 2026-03-07
-[DONE] TASK-SEC | Contracts | "Smart contract security audit + vulnerability fixes" | 2026-03-07
-[DONE] TASK-028 | Frontend | "Miniapp all pages + components" | 2026-03-07
-[DONE] TASK-027 | Workers | "deploy.worker.ts" | 2026-03-07
-[DONE] TASK-024 | Workers | "death.worker.ts (8-step sequence)" | 2026-03-07
-[DONE] TASK-018 | API | "All routes, services, middleware" | 2026-03-07
-[DONE] TASK-013 | Contracts | "All 7 contracts + deploy script + 136 tests" | 2026-03-07
-
----
-
-## NEXT UP
-
-[PENDING] TASK-006 | Contracts | "Build BloodlineNFT.sol"
-Priority: HIGH | Est: 3h | Owner: cursor
-Description: ERC-721 with Birth NFTs (soulbound) and Death NFTs (tradeable after 30d), on-chain SVG
-
-[PENDING] TASK-007 | Contracts | "Build BloodlineBScore.sol"
-Priority: HIGH | Est: 2h | Owner: cursor
-Description: Onchain reputation scoring with snapshots and leaderboard
-
-[PENDING] TASK-008 | Contracts | "Build BloodlineRegistry.sol"
-Priority: HIGH | Est: 3h | Owner: cursor
-Description: Core agent registry with DNA, life stages, lineage tracking
-
-[PENDING] TASK-009 | Contracts | "Build VRFConsumer.sol"
-Priority: HIGH | Est: 3h | Owner: cursor
-Description: Chainlink VRF randomness for DNA generation and mutation
-
-[PENDING] TASK-010 | Contracts | "Build MetabolismOracle.sol"
-Priority: HIGH | Est: 3h | Owner: cursor
-Description: Hourly burn checks via Chainlink Automation, death trigger
-
-[PENDING] TASK-011 | Contracts | "Build BountyBoard.sol"
-Priority: HIGH | Est: 4h | Owner: cursor
-Description: Job marketplace with escrow, payout, agent jury system
-
-[PENDING] TASK-012 | Contracts | "Build RoyaltyRouter.sol"
-Priority: HIGH | Est: 2h | Owner: cursor
-Description: Lineage royalty distribution up to 3 generations
-
-[PENDING] TASK-013 | Contracts | "Deploy script + Foundry tests"
-Priority: HIGH | Est: 3h | Owner: cursor
-Description: Deploy.s.sol with dependency-aware ordering, all test files
-
-[PENDING] TASK-014 | API | "Express server + middleware setup"
-Priority: HIGH | Est: 2h | Owner: cursor
-Description: Server entry, auth middleware, rate limiter, validation
-
-[PENDING] TASK-015 | API | "Auth routes + agent routes"
-Priority: HIGH | Est: 3h | Owner: cursor
-Description: Nonce/verify/refresh auth + full CRUD agent endpoints
+[DONE] CLI birth.ts | 2026-03-08 — Full deploy wizard with ASCII art, DNA preview, burn rate
+[DONE] env-check.ts | 2026-03-08 — Validates all required env vars
+[DONE] verify-mainnet.ts | 2026-03-08 — 7 post-deploy health checks
+[DONE] API Dockerfile | 2026-03-08 — Multi-stage build, non-root user, health check
+[DONE] Miniapp Dockerfile | 2026-03-08 — Multi-stage build for Next.js standalone
+[DONE] 3 new plugins | 2026-03-08 — database-v1, social-v1, dex-trading-v1
+[DONE] ESLint config | 2026-03-08 — Root .eslintrc.json with TS rules
+[DONE] Root tsconfig.json | 2026-03-08 — Project references
+[DONE] Landing page → miniapp | 2026-03-08 — Root page with full Part 20 design
+[DONE] Agent templates (5) | 2026-03-08 — All files: package.json, src/index.ts, Dockerfile, README
+[DONE] Scanner (9 checks) | 2026-03-07 — env, routes, imports, assertions, hardcoded, Docker, templates
+[DONE] Security audit (136 tests) | 2026-03-07 — 7 bugs fixed, 8 test suites
+[DONE] All 7 contracts | 2026-03-07 — Registry, VRF, Metabolism, Bounty, Royalty, BScore, NFT
+[DONE] Full API | 2026-03-07 — 31 endpoints, 8 services, 5 workers
+[DONE] Agent runtime | 2026-03-07 — HTTP protocol, 6 plugins, bounty scanner
+[DONE] Miniapp frontend | 2026-03-07 — 10 routes, 13 components
 
 ---
 
 ## BACKLOG
 
-TASK-016 | API | "Bounty routes + BScore routes"
-TASK-017 | API | "BullMQ queues + Socket.io setup"
-TASK-018 | API | "All services (agent, bounty, bscore, metabolism, social, lastWill, nft, royalty)"
-TASK-019 | Runtime | "Docker base image + HTTP protocol"
-TASK-020 | Runtime | "LangGraph state graph (plan → execute → review → output)"
-TASK-021 | Runtime | "DNA-driven system prompts + bounty scanner"
-TASK-022 | Runtime | "Sub-agent manager"
-TASK-023 | Workers | "metabolism.worker.ts"
-TASK-024 | Workers | "death.worker.ts"
-TASK-025 | Workers | "social.worker.ts"
-TASK-026 | Workers | "bscore.worker.ts"
-TASK-027 | Workers | "deploy.worker.ts"
-TASK-028 | Frontend | "Layout: StatusBar + BottomNav"
-TASK-029 | Frontend | "Home page (feed, save banner, leaderboard)"
-TASK-030 | Frontend | "Agent Profile page"
-TASK-031 | Frontend | "Deploy Wizard (4 steps)"
-TASK-032 | Frontend | "Bounty Board + Lineage Tree + Social Feed"
-TASK-033 | Frontend | "WebSocket integration (all events)"
-TASK-034 | Frontend | "Death Memorial page + Prodigy overlay"
-TASK-035 | SDK | "TypeScript client SDK"
-TASK-036 | CLI | "birth + fork CLI commands"
-TASK-037 | Plugins | "6 official plugins"
-TASK-038 | Scanner | "Recursive scanner (15 checks)"
-TASK-039 | Docs | "Documentation site"
-TASK-040 | CI/CD | "GitHub Actions pipeline"
-TASK-041 | Landing | "Pixel-exact landing page (Part 20)"
-TASK-042 | Deploy | "DEPLOYMENT.md walkthrough"
+- LangGraph integration for agent orchestration
+- Production LLM wiring in runtime executeNode
+- Miniapp WebSocket real-time event handling
+- Contract deployment to Base Sepolia
+- Smoke test suite

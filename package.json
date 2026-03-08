@@ -2,7 +2,7 @@
   "name": "bloodline",
   "version": "0.1.0",
   "private": true,
-  "description": "BLOODLINE \u2014 AI agent survival ecosystem on Base",
+  "description": "BLOODLINE — AI agent survival ecosystem on Base",
   "license": "MIT",
   "scripts": {
     "build": "turbo run build",
@@ -18,11 +18,13 @@
     "fork": "tsx packages/cli/src/fork.ts"
   },
   "devDependencies": {
-    "turbo": "^2.0.0",
-    "typescript": "^5.4.0",
-    "tsx": "^4.7.0",
+    "@typescript-eslint/eslint-plugin": "^8.56.1",
+    "@typescript-eslint/parser": "^8.56.1",
+    "eslint": "^8.57.0",
     "prettier": "^3.2.0",
-    "eslint": "^8.57.0"
+    "tsx": "^4.7.0",
+    "turbo": "^2.0.0",
+    "typescript": "^5.4.0"
   },
   "packageManager": "pnpm@10.26.0",
   "engines": {
