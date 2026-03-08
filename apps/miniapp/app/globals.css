@@ -42,10 +42,9 @@ body::before {
   position: fixed;
   inset: 0;
   background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 40px 40px;
-  opacity: 0.06;
+    linear-gradient(rgba(255,26,26,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,26,26,0.03) 1px, transparent 1px);
+  background-size: 28px 28px;
   pointer-events: none;
   z-index: 0;
 }
@@ -76,6 +75,11 @@ body::before {
 @keyframes pulse-glow {
   0%, 100% { box-shadow: 0 0 8px currentColor; }
   50% { box-shadow: 0 0 20px currentColor; }
+}
+
+@keyframes glow {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.15); opacity: 1; }
 }
 
 @keyframes fade-up {
