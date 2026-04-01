@@ -28,7 +28,7 @@ export function rateLimit(options: RateLimitOptions = {}) {
 
       const results = await multi.exec();
       if (!results) {
-        next();
+        res.status(503).json({ error: 'Service temporarily unavailable' });
         return;
       }
 
@@ -54,7 +54,7 @@ export function rateLimit(options: RateLimitOptions = {}) {
       next();
     } catch (err) {
       console.error('[RateLimit] Redis error:', err);
-      next();
+      res.status(503).json({ error: 'Rate limiting service unavailable' });
     }
   };
 }

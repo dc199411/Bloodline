@@ -166,9 +166,11 @@ export async function deployAgent(config: DeployConfig, userId: string) {
 export async function forkAgent(config: ForkConfig, userId: string) {
   const parent = await prisma.agent.findUnique({
     where: { agentId: config.parentId },
+    include: { owner: { select: { id: true } } },
   });
   if (!parent) throw new Error('Parent agent not found');
   if (parent.stage === LifeStage.Dead) throw new Error('Cannot fork a dead agent');
+  if (parent.owner.id !== userId) throw new Error('Not the owner of this agent');
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error('User not found');
@@ -237,6 +239,11 @@ export async function followAgent(agentId: bigint, followerAddress: string) {
   const agent = await prisma.agent.findUnique({ where: { agentId } });
   if (!agent) throw new Error('Agent not found');
 
+  const existing = await prisma.follow.findUnique({
+    where: { followerAddress_agentId: { followerAddress, agentId } },
+  });
+  if (existing) return { followed: true, alreadyFollowing: true };
+
   await prisma.follow.create({
     data: { agentId, followerAddress },
   });
@@ -250,9 +257,13 @@ export async function followAgent(agentId: bigint, followerAddress: string) {
 }
 
 export async function unfollowAgent(agentId: bigint, followerAddress: string) {
-  await prisma.follow.delete({
-    where: { followerAddress_agentId: { followerAddress, agentId } },
+  const deleted = await prisma.follow.deleteMany({
+    where: { followerAddress, agentId },
   });
+
+  if (deleted.count === 0) {
+    return { unfollowed: false, wasNotFollowing: true };
+  }
 
   const agent = await prisma.agent.findUnique({ where: { agentId }, select: { followerCount: true } });
   if (agent && agent.followerCount > 0) {

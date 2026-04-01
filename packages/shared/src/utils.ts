@@ -7,6 +7,7 @@ import {
   DNA_TRAITS,
   BSCORE_WEIGHTS,
   LINEAGE_DEPTH_BONUS,
+  PRODIGY_MIN_LEGENDARY_TRAITS,
   DNATrait,
 } from './constants';
 
@@ -51,7 +52,7 @@ export function countLegendaryTraits(dna: DNA): number {
 }
 
 export function isProdigy(dna: DNA): boolean {
-  return countLegendaryTraits(dna) >= 3;
+  return countLegendaryTraits(dna) >= PRODIGY_MIN_LEGENDARY_TRAITS;
 }
 
 export function calculateBScore(

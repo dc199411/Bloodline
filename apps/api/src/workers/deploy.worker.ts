@@ -92,34 +92,37 @@ export function createDeployWorker(): Worker {
         const metadataUri = `ipfs://placeholder-${Date.now()}`;
         emitDeployLog('ipfs', 'complete', `Metadata URI: ${metadataUri}`);
 
-        // Step 5: Register onchain (placeholder)
+        // Step 5: Register onchain (placeholder) — use serializable transaction for safe ID allocation
         emitDeployLog('onchain', 'start', 'Registering onchain...');
-        const nextId = await prisma.agent.findFirst({
-          orderBy: { agentId: 'desc' },
-          select: { agentId: true },
-        });
-        agentId = nextId ? nextId.agentId + BigInt(1) : BigInt(1);
-        await prisma.agent.create({
-          data: {
-            agentId,
-            ownerId: userId,
-            name: agentName,
-            description: (data.config as DeployConfig | ForkConfig).description ?? '',
-            metadataUri,
-            stage: 'alive',
-            intelligence: dna.intelligence,
-            speed: dna.speed,
-            creativity: dna.creativity,
-            frugality: dna.frugality,
-            riskAppetite: dna.riskAppetite,
-            socialEnergy: dna.socialEnergy,
-            loyalty: dna.loyalty,
-            resilience: dna.resilience,
-            parentAgentId: parentId,
-            lineageDepth,
-            bornAt: new Date(),
-          },
-        });
+        const created = await prisma.$transaction(async (tx) => {
+          const nextId = await tx.agent.findFirst({
+            orderBy: { agentId: 'desc' },
+            select: { agentId: true },
+          });
+          const newAgentId = nextId ? nextId.agentId + BigInt(1) : BigInt(1);
+          return tx.agent.create({
+            data: {
+              agentId: newAgentId,
+              ownerId: userId,
+              name: agentName,
+              description: (data.config as DeployConfig | ForkConfig).description ?? '',
+              metadataUri,
+              stage: 'alive',
+              intelligence: dna.intelligence,
+              speed: dna.speed,
+              creativity: dna.creativity,
+              frugality: dna.frugality,
+              riskAppetite: dna.riskAppetite,
+              socialEnergy: dna.socialEnergy,
+              loyalty: dna.loyalty,
+              resilience: dna.resilience,
+              parentAgentId: parentId,
+              lineageDepth,
+              bornAt: new Date(),
+            },
+          });
+        }, { isolationLevel: 'Serializable' });
+        agentId = created.agentId;
         emitDeployLog('onchain', 'complete', `Agent ${agentId} registered`);
 
         // Step 6: Start container (placeholder)

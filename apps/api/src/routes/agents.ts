@@ -2,18 +2,11 @@ import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { authRequired } from '../middleware/auth';
 import { validate } from '../middleware/validate';
+import { parseBigIntParam } from '../lib/params';
 import type { AuthRequest } from '../types';
 import * as agentService from '../services/agent.service';
 
 export const agentsRouter: Router = Router();
-
-function parseBigIntParam(value: string): bigint | null {
-  try {
-    return BigInt(value);
-  } catch {
-    return null;
-  }
-}
 
 const deploySchema = z.object({
   name: z.string().min(1).max(64),

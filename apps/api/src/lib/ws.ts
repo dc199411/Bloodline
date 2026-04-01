@@ -18,8 +18,9 @@ export function setupWebSocket(httpServer: HttpServer): Server {
   });
 
   io.on('connection', (socket) => {
+    console.log('[WS] Client connected:', socket.id);
     socket.on('disconnect', (reason) => {
-      // Cleanup if needed
+      console.log('[WS] Client disconnected:', socket.id, reason);
     });
   });
 

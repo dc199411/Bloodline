@@ -2,7 +2,13 @@ import type { NextFunction, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import type { AuthRequest, JWTPayload } from '../types';
 
-const JWT_SECRET = process.env.JWT_SECRET ?? '';
+function getJWTSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET environment variable is not set');
+  }
+  return secret;
+}
 
 export function extractToken(req: AuthRequest): string | null {
   const authHeader = req.headers.authorization;
@@ -14,7 +20,7 @@ export function extractToken(req: AuthRequest): string | null {
 
 export function verifyToken(token: string): JWTPayload | null {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+    const decoded = jwt.verify(token, getJWTSecret()) as JWTPayload;
     return decoded;
   } catch {
     return null;

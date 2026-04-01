@@ -60,6 +60,10 @@ export class BloodlineClient {
 
     const text = await res.text();
     if (!text) return {} as T;
-    return JSON.parse(text) as T;
+    try {
+      return JSON.parse(text) as T;
+    } catch {
+      throw new Error(`Failed to parse response as JSON: ${text.slice(0, 200)}`);
+    }
   }
 }
