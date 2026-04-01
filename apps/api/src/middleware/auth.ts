@@ -1,4 +1,4 @@
-import type { NextFunction, Response } from 'express';
+import type { Request, NextFunction, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import type { AuthRequest, JWTPayload } from '../types';
 
@@ -10,7 +10,7 @@ function getJWTSecret(): string {
   return secret;
 }
 
-export function extractToken(req: AuthRequest): string | null {
+export function extractToken(req: Request): string | null {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return null;
@@ -27,7 +27,7 @@ export function verifyToken(token: string): JWTPayload | null {
   }
 }
 
-export function authRequired(req: AuthRequest, res: Response, next: NextFunction): void {
+export function authRequired(req: Request, res: Response, next: NextFunction): void {
   const token = extractToken(req);
   if (!token) {
     res.status(401).json({ error: 'Missing or invalid authorization header' });
@@ -40,6 +40,6 @@ export function authRequired(req: AuthRequest, res: Response, next: NextFunction
     return;
   }
 
-  req.user = payload;
+  (req as AuthRequest).user = payload;
   next();
 }

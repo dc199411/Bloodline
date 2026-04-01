@@ -7,7 +7,7 @@ const METABOLISM_CRON = '0 * * * *'; // Every hour at minute 0
 export function createMetabolismWorker(): Worker {
   const worker = new Worker(
     'metabolism',
-    async (job) => {
+    async (_job) => {
       try {
         console.log('[MetabolismWorker] Running checkAllAgents...');
         const results = await checkAllAgents();

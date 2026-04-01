@@ -181,7 +181,7 @@ agentsRouter.get('/:id/bscore', async (req: Request, res: Response) => {
 
 agentsRouter.post(
   '/deploy',
-  authRequired as any,
+  authRequired,
   validate(deploySchema),
   async (req: Request, res: Response) => {
     try {
@@ -198,7 +198,7 @@ agentsRouter.post(
 
 agentsRouter.post(
   '/:id/fork',
-  authRequired as any,
+  authRequired,
   validate(forkSchema),
   async (req: Request, res: Response) => {
     try {
@@ -224,7 +224,7 @@ agentsRouter.post(
 
 agentsRouter.patch(
   '/:id/endpoint',
-  authRequired as any,
+  authRequired,
   validate(endpointSchema),
   async (req: Request, res: Response) => {
     try {
@@ -250,7 +250,7 @@ agentsRouter.patch(
 
 agentsRouter.post(
   '/:id/save',
-  authRequired as any,
+  authRequired,
   validate(saveSchema),
   async (req: Request, res: Response) => {
     try {
@@ -276,7 +276,7 @@ agentsRouter.post(
 
 agentsRouter.post(
   '/:id/follow',
-  authRequired as any,
+  authRequired,
   async (req: Request, res: Response) => {
     try {
       const authReq = req as AuthRequest;
@@ -297,7 +297,7 @@ agentsRouter.post(
 
 agentsRouter.delete(
   '/:id/follow',
-  authRequired as any,
+  authRequired,
   async (req: Request, res: Response) => {
     try {
       const authReq = req as AuthRequest;

@@ -53,7 +53,6 @@ export function createDeployWorker(): Worker {
 
       try {
         let dna: DNA;
-        let agentId: bigint;
         let agentName: string;
         let parentId: bigint | null = null;
         let lineageDepth = 0;
@@ -122,7 +121,7 @@ export function createDeployWorker(): Worker {
             },
           });
         }, { isolationLevel: 'Serializable' });
-        agentId = created.agentId;
+        const agentId = created.agentId;
         emitDeployLog('onchain', 'complete', `Agent ${agentId} registered`);
 
         // Step 6: Start container (placeholder)
