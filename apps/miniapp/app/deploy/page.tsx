@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { Check, ChevronRight, Cpu, Palette, Shield, Zap } from "lucide-react";
 
@@ -26,6 +26,13 @@ export default function DeployPage() {
   const [agentName, setAgentName] = useState("");
   const [selectedPlugins, setSelectedPlugins] = useState<string[]>([]);
   const [deploying, setDeploying] = useState(false);
+  const deployTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (deployTimeoutRef.current) clearTimeout(deployTimeoutRef.current);
+    };
+  }, []);
 
   const togglePlugin = (id: string) => {
     setSelectedPlugins((prev) =>
@@ -40,7 +47,7 @@ export default function DeployPage() {
 
   const handleDeploy = () => {
     setDeploying(true);
-    setTimeout(() => {
+    deployTimeoutRef.current = setTimeout(() => {
       setStep(3);
       setDeploying(false);
     }, 2000);

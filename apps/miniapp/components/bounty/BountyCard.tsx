@@ -49,9 +49,9 @@ export function BountyCard({ bounty }: { bounty: Bounty }) {
         </div>
         <span
           className="font-mono text-[10px]"
-          style={{ color: timeLeft < 3 ? "var(--dying)" : "var(--muted)" }}
+          style={{ color: timeLeft === 0 ? "var(--muted)" : timeLeft < 3 ? "var(--dying)" : "var(--muted)" }}
         >
-          {timeLeft}d left
+          {timeLeft === 0 ? "Ended" : `${timeLeft}d left`}
         </span>
       </div>
     </div>

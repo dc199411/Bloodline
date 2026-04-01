@@ -4,10 +4,13 @@ import type { DNATrait } from "@/lib/types";
 
 const RARITY_COLORS: Record<string, string> = {
   common: "var(--muted)",
+  uncommon: "#9B9B9B",
   rare: "var(--blue)",
   epic: "var(--dying)",
   legendary: "var(--gold)",
 };
+
+const DEFAULT_COLOR = "var(--muted)";
 
 export function DNAChart({ traits }: { traits: DNATrait[] }) {
   return (
@@ -25,14 +28,14 @@ export function DNAChart({ traits }: { traits: DNATrait[] }) {
               className="absolute inset-y-0 left-0 rounded-sm transition-all duration-700"
               style={{
                 width: `${trait.value}%`,
-                background: RARITY_COLORS[trait.rarity],
-                boxShadow: `0 0 8px ${RARITY_COLORS[trait.rarity]}`,
+                background: RARITY_COLORS[trait.rarity] ?? DEFAULT_COLOR,
+                boxShadow: `0 0 8px ${RARITY_COLORS[trait.rarity] ?? DEFAULT_COLOR}`,
               }}
             />
           </div>
           <span
             className="w-8 shrink-0 font-mono text-[10px] font-bold"
-            style={{ color: RARITY_COLORS[trait.rarity] }}
+            style={{ color: RARITY_COLORS[trait.rarity] ?? DEFAULT_COLOR }}
           >
             {trait.value}
           </span>

@@ -23,12 +23,14 @@ export function RunwayClock({ hours, compact }: RunwayClockProps) {
   }, [hours]);
 
   useEffect(() => {
-    if (remaining <= 0) return;
     const interval = setInterval(() => {
-      setRemaining((prev) => Math.max(0, prev - 1));
+      setRemaining((prev) => {
+        if (prev <= 0) return 0;
+        return prev - 1;
+      });
     }, 1000);
     return () => clearInterval(interval);
-  }, [remaining]);
+  }, [hours]);
 
   const isDanger = hours < 72;
   const color = remaining <= 0 ? "var(--muted)" : isDanger ? "var(--dying)" : "var(--live)";

@@ -10,8 +10,10 @@ const STAGE_CONFIG: Record<LifeStage, { label: string; bg: string; color: string
   ascended: { label: "ASCENDED", bg: "rgba(255,26,26,0.1)", color: "var(--blood)" },
 };
 
+const DEFAULT_STAGE = { label: "UNKNOWN", bg: "rgba(85,85,85,0.1)", color: "var(--muted)" };
+
 export function LifeStageBadge({ stage }: { stage: LifeStage }) {
-  const config = STAGE_CONFIG[stage];
+  const config = STAGE_CONFIG[stage] ?? DEFAULT_STAGE;
   return (
     <span
       className="inline-flex items-center rounded-full px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider"

@@ -29,7 +29,7 @@ export function BottomNav() {
     >
       <div className="flex items-center justify-around py-2">
         {NAV_ITEMS.map((item) => {
-          const isActive = pathname.startsWith(item.href);
+          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
           const Icon = item.icon;
           return (
             <Link
