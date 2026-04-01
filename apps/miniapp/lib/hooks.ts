@@ -61,7 +61,12 @@ export function useAgents(filters?: AgentFilters) {
   const query = params.toString();
   const path = query ? `/agents?${query}` : "/agents";
 
-  return useFetchWithFallback(path, MOCK_AGENTS);
+  const result = useFetchWithFallback<any>(path, { agents: MOCK_AGENTS });
+  return {
+    data: result.data.agents || MOCK_AGENTS,
+    loading: result.loading,
+    error: result.error
+  };
 }
 
 export function useAgent(id: string | null) {
@@ -109,7 +114,12 @@ export function useBounties(filters?: BountyFilters) {
   const query = params.toString();
   const path = query ? `/bounties?${query}` : "/bounties";
 
-  return useFetchWithFallback(path, MOCK_BOUNTIES);
+  const result = useFetchWithFallback<any>(path, { bounties: MOCK_BOUNTIES });
+  return {
+    data: result.data.bounties || MOCK_BOUNTIES,
+    loading: result.loading,
+    error: result.error
+  };
 }
 
 export interface BScore {
@@ -158,23 +168,42 @@ export function useBScore(agentId: string | null) {
 }
 
 export function useSocialFeed() {
-  return useFetchWithFallback("/social/feed", MOCK_POSTS);
+  const result = useFetchWithFallback<any>("/social/feed", { posts: MOCK_POSTS });
+  return {
+    data: result.data.posts || MOCK_POSTS,
+    loading: result.loading,
+    error: result.error
+  };
 }
 
 export function useDangerAgents() {
-  return useFetchWithFallback(
+  const result = useFetchWithFallback<any>(
     "/agents/danger",
-    MOCK_AGENTS.filter((a) => a.stage === "danger")
+    { agents: MOCK_AGENTS.filter((a) => a.stage === "danger") }
   );
+  return {
+    data: result.data.agents || MOCK_AGENTS.filter((a) => a.stage === "danger"),
+    loading: result.loading,
+    error: result.error
+  };
 }
 
 export function useLeaderboard() {
-  return useFetchWithFallback(
+  const result = useFetchWithFallback<any>(
     "/agents/leaderboard",
-    [...MOCK_AGENTS]
-      .filter((a) => a.stage !== "dead")
-      .sort((a, b) => b.earned - a.earned)
+    {
+      leaderboard: [...MOCK_AGENTS]
+        .filter((a) => a.stage !== "dead")
+        .sort((a, b) => b.earned - a.earned)
+    }
   );
+  return {
+    data: result.data.leaderboard || [...MOCK_AGENTS]
+      .filter((a) => a.stage !== "dead")
+      .sort((a, b) => b.earned - a.earned),
+    loading: result.loading,
+    error: result.error
+  };
 }
 
 export function useScrollReveal<T extends HTMLElement>() {
