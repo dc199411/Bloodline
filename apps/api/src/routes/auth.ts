@@ -6,8 +6,7 @@ import { SiweMessage } from 'siwe';
 import { redis } from '../lib/redis';
 import { prisma } from '../lib/prisma';
 import { validate } from '../middleware/validate';
-import { authRequired } from '../middleware/auth';
-import type { AuthRequest, JWTPayload } from '../types';
+import type { JWTPayload } from '../types';
 
 export const authRouter: Router = Router();
 

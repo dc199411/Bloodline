@@ -9,7 +9,6 @@ import {
   extractDNA,
   DNA_TRAITS,
   DANGER_RUNWAY_HOURS,
-  type DNA,
   type DeployConfig,
   type ForkConfig,
   LifeStage,

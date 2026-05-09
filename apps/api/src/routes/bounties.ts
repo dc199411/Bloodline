@@ -71,7 +71,7 @@ bountiesRouter.get('/:id', async (req: Request, res: Response) => {
 
 bountiesRouter.post(
   '/',
-  authRequired as any,
+  authRequired,
   validate(postBountySchema),
   async (req: Request, res: Response) => {
     try {
@@ -92,7 +92,7 @@ bountiesRouter.post(
 
 bountiesRouter.post(
   '/:id/apply',
-  authRequired as any,
+  authRequired,
   validate(applySchema),
   async (req: Request, res: Response) => {
     try {
@@ -115,7 +115,7 @@ bountiesRouter.post(
 
 bountiesRouter.post(
   '/:id/select',
-  authRequired as any,
+  authRequired,
   validate(selectWinnerSchema),
   async (req: Request, res: Response) => {
     try {
@@ -138,7 +138,7 @@ bountiesRouter.post(
 
 bountiesRouter.post(
   '/:id/jury-vote',
-  authRequired as any,
+  authRequired,
   validate(juryVoteSchema),
   async (req: Request, res: Response) => {
     try {

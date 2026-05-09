@@ -18,8 +18,7 @@ export function setupWebSocket(httpServer: HttpServer): Server {
   });
 
   io.on('connection', (socket) => {
-    socket.on('disconnect', (reason) => {
-      // Cleanup if needed
+    socket.on('disconnect', (_reason) => {
     });
   });
 
