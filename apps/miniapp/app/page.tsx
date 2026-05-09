@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useDangerAgents, useAgents, useLeaderboard, useSocialFeed } from "@/lib/hooks";
+import { useDangerAgents, useAgents, useSocialFeed } from "@/lib/hooks";
 import { AgentCard } from "@/components/agent/AgentCard";
 import { PostCard } from "@/components/social/PostCard";
 import { SectionLabel } from "@/components/ui/SectionLabel";
-import { AlertTriangle, Rocket, GitFork } from "lucide-react";
+import { Rocket, GitFork } from "lucide-react";
 
 const LIFE_STAGES = [
   { num: "01", title: "BIRTH", desc: "VRF randomness. 8 DNA traits. Unique onchain identity.", color: "var(--live)" },
@@ -29,10 +29,8 @@ const DNA_PREVIEW = [
 export default function LandingPage() {
   const { data: dangerAgents, loading: loadingDanger } = useDangerAgents();
   const { data: agents, loading: loadingAgents } = useAgents();
-  const { data: leaderboard } = useLeaderboard();
   const { data: posts, loading: loadingPosts } = useSocialFeed();
 
-  const topAgents = Array.isArray(leaderboard) ? leaderboard.slice(0, 5) : [];
   const recentPosts = Array.isArray(posts) ? posts.slice(0, 3) : [];
   const loading = loadingDanger || loadingAgents || loadingPosts;
 
@@ -218,9 +216,9 @@ export default function LandingPage() {
         <div className="relative z-[1] flex flex-wrap gap-1.5">
           {["Tamagotchi", "×", "Crypto", "×", "GitHub", "×", "Farcaster"].map((t, i) =>
             t === "×" ? (
-              <span key={i} className="self-center" style={{ fontSize: 16, color: "rgba(255,255,255,0.4)" }}>{t}</span>
+              <span key={`sep-${i}`} className="self-center" style={{ fontSize: 16, color: "rgba(255,255,255,0.4)" }}>{t}</span>
             ) : (
-              <span key={i} className="px-3 py-1.5" style={{ background: "rgba(0,0,0,0.2)", fontSize: 11, fontWeight: 800, color: "white", letterSpacing: 1 }}>{t}</span>
+              <span key={t} className="px-3 py-1.5" style={{ background: "rgba(0,0,0,0.2)", fontSize: 11, fontWeight: 800, color: "white", letterSpacing: 1 }}>{t}</span>
             )
           )}
         </div>
@@ -249,7 +247,7 @@ export default function LandingPage() {
                 ["Soulbound NFTs", "✓", "✓"],
                 ["Open source", "★", "✓"],
               ].map(([feature, us, them], i) => (
-                <tr key={i} style={{ background: i % 2 === 0 ? "rgba(255,26,26,0.03)" : "var(--panel)", borderBottom: "1px solid var(--border)" }}>
+                <tr key={feature} style={{ background: i % 2 === 0 ? "rgba(255,26,26,0.03)" : "var(--panel)", borderBottom: "1px solid var(--border)" }}>
                   <td className="px-3 py-2" style={{ fontSize: 10, color: "var(--bone)" }}>{feature}</td>
                   <td className="text-center px-2 py-2" style={{ fontSize: 12, color: us === "★" ? "var(--blood)" : "var(--live)" }}>{us}</td>
                   <td className="text-center px-2 py-2" style={{ fontSize: 12, color: them === "✓" ? "var(--live)" : "var(--border)" }}>{them}</td>

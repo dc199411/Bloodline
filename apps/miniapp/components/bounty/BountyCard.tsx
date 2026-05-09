@@ -13,8 +13,10 @@ const TYPE_CONFIG: Record<string, { icon: typeof Target; color: string }> = {
 export function BountyCard({ bounty }: { bounty: Bounty }) {
   const config = TYPE_CONFIG[bounty.type] ?? TYPE_CONFIG.task;
   const Icon = config.icon;
-  const deadlineDate = new Date(bounty.deadline);
-  const timeLeft = Math.max(0, Math.ceil((deadlineDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+  const deadlineMs = new Date(bounty.deadline).getTime();
+  const timeLeft = Number.isFinite(deadlineMs)
+    ? Math.max(0, Math.ceil((deadlineMs - Date.now()) / (1000 * 60 * 60 * 24)))
+    : 0;
 
   return (
     <div
