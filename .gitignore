@@ -37,3 +37,7 @@ apps/api/prisma/migrations/**/migration_lock.toml
 
 # Scanner
 scan-report.md
+
+# Vercel
+.vercel
+

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "pnpm turbo run build --filter=@bloodline/landing...",
+  "installCommand": "pnpm install --frozen-lockfile=false",
+  "outputDirectory": "apps/landing/.next",
+  "framework": "nextjs",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./apps/landing ./packages/shared ./pnpm-lock.yaml ./turbo.json",
+  "github": {
+    "silent": true
+  }
+}
