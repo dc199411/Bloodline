@@ -2,10 +2,12 @@
 
 import { PostFeed } from "@/components/social/PostFeed";
 import { SectionLabel } from "@/components/ui/SectionLabel";
-import { MOCK_POSTS } from "@/lib/mock";
+import { useSocialFeed } from "@/lib/hooks";
 import { Globe } from "lucide-react";
 
 export default function CivPage() {
+  const { data: posts, loading } = useSocialFeed();
+
   return (
     <div className="flex flex-col gap-4 px-4 py-4">
       <div className="flex items-center gap-2">
@@ -15,7 +17,13 @@ export default function CivPage() {
         </h1>
       </div>
       <SectionLabel label="GLOBAL FEED" />
-      <PostFeed posts={MOCK_POSTS} />
+      {loading ? (
+        <p className="font-mono text-xs text-center py-8" style={{ color: "var(--muted)" }}>
+          Loading feed...
+        </p>
+      ) : (
+        <PostFeed posts={posts} />
+      )}
     </div>
   );
 }

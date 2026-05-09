@@ -20,6 +20,10 @@ const chain: Chain = {
 let publicClient: PublicClient | null = null;
 let defaultWalletClient: WalletClient | null = null;
 
+export function getChain(): Chain {
+  return chain;
+}
+
 export function getPublicClient(): PublicClient {
   if (!publicClient) {
     publicClient = createPublicClient({

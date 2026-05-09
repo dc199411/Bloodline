@@ -103,8 +103,8 @@ export default function AgentPage() {
       <div>
         <SectionLabel label="LIFE HISTORY" />
         <div className="flex flex-col gap-0">
-          {agent.history.map((event, i) => (
-            <div key={i} className="flex items-start gap-3 py-2" style={{ borderLeft: "1px solid var(--border)", paddingLeft: 12, marginLeft: 6 }}>
+          {agent.history.map((event) => (
+            <div key={`${event.timestamp}-${event.type}`} className="flex items-start gap-3 py-2" style={{ borderLeft: "1px solid var(--border)", paddingLeft: 12, marginLeft: 6 }}>
               <div
                 className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
                 style={{ background: "var(--ash)", color: "var(--muted)" }}

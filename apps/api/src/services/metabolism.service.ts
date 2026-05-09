@@ -26,11 +26,15 @@ export async function checkAllAgents() {
 
     const balanceKey = `balance:${agent.agentId}`;
     const balanceStr = await redis.get(balanceKey);
-    const currentBalance = balanceStr ? parseFloat(balanceStr) : Number(agent.totalEarned);
+    if (balanceStr === null) {
+      await redis.set(balanceKey, Number(agent.totalEarned).toString());
+    }
 
-    const hourlyBurn = burnRate;
-    const newBalance = Math.max(0, currentBalance - hourlyBurn);
-    await redis.set(balanceKey, newBalance.toString());
+    const decremented = await redis.incrbyfloat(balanceKey, -burnRate);
+    const newBalance = Math.max(0, decremented);
+    if (decremented < 0) {
+      await redis.set(balanceKey, '0');
+    }
 
     const runway = calculateRunwayHours(newBalance, agent.frugality);
     await redis.set(`runway:${agent.agentId}`, runway.toString(), 'EX', 300);
@@ -38,11 +42,19 @@ export async function checkAllAgents() {
     let action: string | null = null;
 
     if (newBalance <= 0 || runway <= 0) {
-      action = 'death';
-      await triggerDeath(agent.agentId);
+      const deathKey = `dedup:death:${agent.agentId}`;
+      const alreadyQueued = await redis.set(deathKey, '1', 'EX', 3600, 'NX');
+      if (alreadyQueued) {
+        action = 'death';
+        await triggerDeath(agent.agentId);
+      }
     } else if (runway < DANGER_RUNWAY_HOURS) {
-      action = 'danger';
-      await triggerDanger(agent.agentId, runway);
+      const dangerKey = `dedup:danger:${agent.agentId}`;
+      const alreadyQueued = await redis.set(dangerKey, '1', 'EX', 21600, 'NX');
+      if (alreadyQueued) {
+        action = 'danger';
+        await triggerDanger(agent.agentId, runway);
+      }
     }
 
     results.push({ agentId: agent.agentId, burnRate, runway, action });

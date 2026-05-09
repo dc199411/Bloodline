@@ -12,7 +12,9 @@ const TRIGGER_CONFIG: Record<string, { label: string; color: string }> = {
 };
 
 function timeAgo(timestamp: string): string {
-  const diff = Date.now() - new Date(timestamp).getTime();
+  const time = new Date(timestamp).getTime();
+  if (Number.isNaN(time)) return "";
+  const diff = Date.now() - time;
   const hours = Math.floor(diff / (1000 * 60 * 60));
   if (hours < 1) return "just now";
   if (hours < 24) return `${hours}h ago`;

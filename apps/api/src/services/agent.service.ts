@@ -165,9 +165,11 @@ export async function deployAgent(config: DeployConfig, userId: string) {
 export async function forkAgent(config: ForkConfig, userId: string) {
   const parent = await prisma.agent.findUnique({
     where: { agentId: config.parentId },
+    include: { owner: true },
   });
   if (!parent) throw new Error('Parent agent not found');
   if (parent.stage === LifeStage.Dead) throw new Error('Cannot fork a dead agent');
+  if (parent.owner.id !== userId) throw new Error('Not the owner of the parent agent');
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error('User not found');
@@ -206,6 +208,8 @@ export async function updateEndpoint(
 }
 
 export async function saveAgent(agentId: bigint, amount: number, saverAddress: string) {
+  if (!Number.isFinite(amount) || amount <= 0) throw new Error('Amount must be a positive number');
+
   const agent = await prisma.agent.findUnique({ where: { agentId } });
   if (!agent) throw new Error('Agent not found');
   if (agent.stage === LifeStage.Dead) throw new Error('Cannot save a dead agent');

@@ -29,11 +29,12 @@ const refreshSchema = z.object({
 });
 
 function signAccessToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'] });
+  return jwt.sign(payload, JWT_SECRET, { algorithm: 'HS256', expiresIn: JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'] });
 }
 
 function signRefreshToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: REFRESH_EXPIRES_IN as jwt.SignOptions['expiresIn'] });
+  const refreshSecret = process.env.JWT_REFRESH_SECRET ?? JWT_SECRET;
+  return jwt.sign(payload, refreshSecret, { algorithm: 'HS256', expiresIn: REFRESH_EXPIRES_IN as jwt.SignOptions['expiresIn'] });
 }
 
 authRouter.post('/nonce', validate(nonceSchema), async (req: Request, res: Response) => {
@@ -112,7 +113,8 @@ authRouter.post('/refresh', validate(refreshSchema), async (req: Request, res: R
 
     let decoded: JWTPayload;
     try {
-      decoded = jwt.verify(refreshToken, JWT_SECRET) as JWTPayload;
+      const refreshSecret = process.env.JWT_REFRESH_SECRET ?? JWT_SECRET;
+      decoded = jwt.verify(refreshToken, refreshSecret, { algorithms: ['HS256'] }) as JWTPayload;
     } catch {
       res.status(401).json({ error: 'Invalid or expired refresh token' });
       return;

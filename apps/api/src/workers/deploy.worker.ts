@@ -1,3 +1,4 @@
+import { randomInt } from 'crypto';
 import { Worker } from 'bullmq';
 import { queueConnection, socialQueue } from '../lib/queue';
 import { prisma } from '../lib/prisma';
@@ -31,14 +32,14 @@ function emitDeployLog(step: string, status: string, message: string): void {
 
 function randomDNA(): DNA {
   return {
-    intelligence: Math.floor(Math.random() * 256),
-    speed: Math.floor(Math.random() * 256),
-    creativity: Math.floor(Math.random() * 256),
-    frugality: Math.floor(Math.random() * 256),
-    riskAppetite: Math.floor(Math.random() * 256),
-    socialEnergy: Math.floor(Math.random() * 256),
-    loyalty: Math.floor(Math.random() * 256),
-    resilience: Math.floor(Math.random() * 256),
+    intelligence: randomInt(256),
+    speed: randomInt(256),
+    creativity: randomInt(256),
+    frugality: randomInt(256),
+    riskAppetite: randomInt(256),
+    socialEnergy: randomInt(256),
+    loyalty: randomInt(256),
+    resilience: randomInt(256),
   };
 }
 

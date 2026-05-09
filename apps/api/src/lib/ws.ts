@@ -17,21 +17,25 @@ export function setupWebSocket(httpServer: HttpServer): Server {
     pingInterval: 25000,
   });
 
+  const ALLOWED_ROOM_PREFIXES = ['agent:', 'bounty:', 'deploy:'];
+
   io.on('connection', (socket) => {
     const wallet = socket.handshake.query.wallet as string | undefined;
-    if (wallet) {
+    if (wallet && /^0x[a-fA-F0-9]{40}$/.test(wallet)) {
       socket.join(wallet.toLowerCase());
     }
 
     socket.on('join', (room: string) => {
-      if (typeof room === 'string' && room.length <= 128) {
+      if (
+        typeof room === 'string' &&
+        room.length <= 128 &&
+        ALLOWED_ROOM_PREFIXES.some((prefix) => room.startsWith(prefix))
+      ) {
         socket.join(room.toLowerCase());
       }
     });
 
-    socket.on('disconnect', (_reason) => {
-      // Rooms are auto-cleaned by socket.io on disconnect
-    });
+    socket.on('disconnect', () => {});
   });
 
   return io;

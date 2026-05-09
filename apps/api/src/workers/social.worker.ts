@@ -36,14 +36,15 @@ export function createSocialWorker(): Worker {
 
       try {
         if (!VALID_TRIGGERS.includes(trigger)) {
-          console.warn('[SocialWorker] Unknown trigger:', trigger, '- using as-is');
+          console.warn('[SocialWorker] Unknown trigger:', trigger, '- skipping');
+          return { skipped: true, trigger };
         }
 
-        // Rate limiting: small delay between jobs to avoid hitting social API limits
         await new Promise((r) => setTimeout(r, RATE_LIMIT_DELAY_MS));
 
+        const agentId = BigInt(agentIdStr);
         console.log('[SocialWorker] Publishing post for agent', agentIdStr, 'trigger:', trigger);
-        const post = await publishPost(BigInt(agentIdStr), trigger as SocialTrigger, context);
+        const post = await publishPost(agentId, trigger as SocialTrigger, context);
         console.log('[SocialWorker] Post created:', post.id.toString());
         return { postId: post.id.toString(), trigger };
       } catch (err) {
