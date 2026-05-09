@@ -4,7 +4,8 @@ import type { DNA } from '@bloodline/shared';
 import { AgentCore } from './agent-core';
 import { PluginManager } from './plugins';
 
-const PORT = parseInt(process.env.PORT ?? '3001', 10);
+const parsedPort = parseInt(process.env.PORT ?? '3001', 10);
+const PORT = Number.isFinite(parsedPort) ? parsedPort : 3001;
 
 function loadAgentConfig(): {
   agentId: string;
@@ -47,7 +48,7 @@ app.use(express.json());
 app.post('/execute', async (req, res) => {
   try {
     const request = req.body as TaskRequest;
-    if (!request?.taskId || !request?.taskType || !request?.context) {
+    if (!request?.taskId || typeof request.taskId !== 'string' || !request?.taskType || typeof request.taskType !== 'string' || !request?.context || typeof request.context !== 'object') {
       res.status(400).json({ error: 'Invalid TaskRequest: taskId, taskType, context required' });
       return;
     }

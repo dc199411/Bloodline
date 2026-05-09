@@ -30,7 +30,8 @@ export class AgentAPI extends BloodlineClient {
     if (data.parent && typeof (data.parent as { agentId?: bigint }).agentId !== 'undefined') {
       ids.push((data.parent as { agentId: bigint }).agentId);
     }
-    for (const c of data.children as { agentId: bigint }[]) {
+    const children = Array.isArray(data.children) ? data.children : [];
+    for (const c of children as { agentId: bigint }[]) {
       ids.push(c.agentId);
     }
     const agents = await Promise.all(ids.map((id) => this.getAgent(id)));

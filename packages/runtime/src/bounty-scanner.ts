@@ -108,11 +108,14 @@ export class BountyScanner {
 
   private async applyToBounty(bounty: BountyEligible): Promise<void> {
     try {
-      await fetch(`${this.config.apiBaseUrl}/bounties/${bounty.bountyId}/apply`, {
+      const res = await fetch(`${this.config.apiBaseUrl}/bounties/${bounty.bountyId}/apply`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ agentId: this.config.agentId }),
       });
+      if (!res.ok) {
+        console.error('Failed to apply to bounty:', bounty.bountyId, `HTTP ${res.status}`);
+      }
     } catch (err) {
       console.error('Failed to apply to bounty:', bounty.bountyId, err);
     }

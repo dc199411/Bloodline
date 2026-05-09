@@ -70,7 +70,13 @@ async function main() {
     process.exit(1);
   }
 
-  const parentId = BigInt(agentIdStr);
+  let parentId: bigint;
+  try {
+    parentId = BigInt(agentIdStr);
+  } catch {
+    console.error(chalk.red(`Invalid agent ID: "${agentIdStr}". Must be a valid integer.`));
+    process.exit(1);
+  }
   const client = new AgentAPI(API_URL, WS_URL);
 
   let parent: Agent;
@@ -138,4 +144,7 @@ async function main() {
   }
 }
 
-main();
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

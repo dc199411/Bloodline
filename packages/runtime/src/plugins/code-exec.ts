@@ -7,6 +7,7 @@ import type { PluginManifest, PluginResult } from '@bloodline/shared';
 import { RiskLevel } from '@bloodline/shared';
 
 const TIMEOUT_MS = 10_000;
+const MAX_OUTPUT_BYTES = 512_000;
 
 export class CodeExecPlugin implements Plugin {
   id = 'code-exec-v1';
@@ -60,8 +61,8 @@ export class CodeExecPlugin implements Plugin {
 
         let stdout = '';
         let stderr = '';
-        proc.stdout?.on('data', (d) => { stdout += d.toString(); });
-        proc.stderr?.on('data', (d) => { stderr += d.toString(); });
+        proc.stdout?.on('data', (d) => { if (stdout.length < MAX_OUTPUT_BYTES) stdout += d.toString(); });
+        proc.stderr?.on('data', (d) => { if (stderr.length < MAX_OUTPUT_BYTES) stderr += d.toString(); });
 
         proc.on('close', (code) => resolve({ stdout, stderr, code }));
         proc.on('error', (err) => {

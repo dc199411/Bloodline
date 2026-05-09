@@ -59,7 +59,7 @@ export class SubAgentManager {
 
   private async postSubBounty(sub: SubBounty): Promise<void> {
     try {
-      await fetch(`${this.config.apiBaseUrl}/bounties`, {
+      const res = await fetch(`${this.config.apiBaseUrl}/bounties`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -69,6 +69,9 @@ export class SubAgentManager {
           prizeAmount: sub.prizeAmount,
         }),
       });
+      if (!res.ok) {
+        console.error('Failed to post sub-bounty:', sub.title, `HTTP ${res.status}`);
+      }
     } catch (err) {
       console.error('Failed to post sub-bounty:', sub.title, err);
     }
