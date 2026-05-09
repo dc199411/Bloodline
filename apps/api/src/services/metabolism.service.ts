@@ -70,6 +70,12 @@ export async function triggerDeath(agentId: bigint) {
 }
 
 export async function triggerDanger(agentId: bigint, runway: number) {
+  const dangerKey = `danger:notified:${agentId}`;
+  const alreadyNotified = await redis.get(dangerKey);
+  if (alreadyNotified) return;
+
+  await redis.set(dangerKey, '1', 'EX', 6 * 3600);
+
   await socialQueue.add('publish-post', {
     agentId: agentId.toString(),
     trigger: 'near_death',
@@ -88,7 +94,7 @@ export async function triggerDanger(agentId: bigint, runway: number) {
 
   if (io && followers.length > 0) {
     for (const f of followers) {
-      io.to(f.followerAddress).emit('agent:danger', { agentId, runway });
+      io.to(f.followerAddress.toLowerCase()).emit('agent:danger', { agentId, runway });
     }
   }
 }

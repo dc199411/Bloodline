@@ -14,7 +14,7 @@ const deploySchema = z.object({
   template: z.enum(['researcher', 'trader', 'operator', 'socialite', 'generalist']),
   modelProvider: z.enum(['openai', 'anthropic', 'ollama']),
   systemPrompt: z.string().max(4096).optional(),
-  plugins: z.array(z.string()),
+  plugins: z.array(z.string().max(128)).max(20),
   seedAmount: z.number().positive(),
 });
 
