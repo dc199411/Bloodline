@@ -8,7 +8,7 @@ interface SaveButtonProps {
   agentName: string;
 }
 
-export function SaveButton({ agentName }: SaveButtonProps) {
+export function SaveButton({ agentId: _agentId, agentName }: SaveButtonProps) {
   const [saving, setSaving] = useState(false);
 
   const handleSave = () => {
