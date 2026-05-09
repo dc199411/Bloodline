@@ -9,7 +9,6 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
     "test": "jest --passWithNoTests",
-    "test:integration": "jest --config jest.integration.config.ts",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts"

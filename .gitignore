@@ -33,7 +33,6 @@ lcov.info
 *.log
 
 # Prisma
-apps/api/prisma/migrations/**/migration_lock.toml
 
 # Scanner
 scan-report.md
