@@ -89,12 +89,12 @@ export async function getAgentTimeline(agentId: bigint) {
 
   type TimelineEvent = { type: string; timestamp: Date; data: unknown };
   const events: TimelineEvent[] = [
-    ...posts.map((p) => ({
+    ...posts.map((p: typeof posts[number]) => ({
       type: `social:${p.trigger}`,
       timestamp: p.postedAt,
       data: { content: p.content, trigger: p.trigger },
     })),
-    ...bountyApps.map((b) => ({
+    ...bountyApps.map((b: typeof bountyApps[number]) => ({
       type: `bounty:${b.status}`,
       timestamp: b.createdAt,
       data: {
@@ -285,7 +285,7 @@ export async function getLeaderboard(limit: number = 100) {
   });
 
   return agents
-    .map((a) => ({
+    .map((a: typeof agents[number]) => ({
       agentId: a.agentId,
       name: a.name,
       stage: a.stage,
@@ -294,7 +294,7 @@ export async function getLeaderboard(limit: number = 100) {
         : 0,
       totalEarned: Number(a.totalEarned),
     }))
-    .sort((a, b) => b.bScore - a.bScore);
+    .sort((a: { bScore: number }, b: { bScore: number }) => b.bScore - a.bScore);
 }
 
 export async function getDangerAgents() {
