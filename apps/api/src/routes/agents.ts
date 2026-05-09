@@ -2,18 +2,11 @@ import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { authRequired } from '../middleware/auth';
 import { validate } from '../middleware/validate';
+import { parseBigIntParam } from '../lib/params';
 import type { AuthRequest } from '../types';
 import * as agentService from '../services/agent.service';
 
 export const agentsRouter: Router = Router();
-
-function parseBigIntParam(value: string): bigint | null {
-  try {
-    return BigInt(value);
-  } catch {
-    return null;
-  }
-}
 
 const deploySchema = z.object({
   name: z.string().min(1).max(64),
@@ -188,7 +181,7 @@ agentsRouter.get('/:id/bscore', async (req: Request, res: Response) => {
 
 agentsRouter.post(
   '/deploy',
-  authRequired as any,
+  authRequired,
   validate(deploySchema),
   async (req: Request, res: Response) => {
     try {
@@ -205,7 +198,7 @@ agentsRouter.post(
 
 agentsRouter.post(
   '/:id/fork',
-  authRequired as any,
+  authRequired,
   validate(forkSchema),
   async (req: Request, res: Response) => {
     try {
@@ -231,7 +224,7 @@ agentsRouter.post(
 
 agentsRouter.patch(
   '/:id/endpoint',
-  authRequired as any,
+  authRequired,
   validate(endpointSchema),
   async (req: Request, res: Response) => {
     try {
@@ -257,7 +250,7 @@ agentsRouter.patch(
 
 agentsRouter.post(
   '/:id/save',
-  authRequired as any,
+  authRequired,
   validate(saveSchema),
   async (req: Request, res: Response) => {
     try {
@@ -283,7 +276,7 @@ agentsRouter.post(
 
 agentsRouter.post(
   '/:id/follow',
-  authRequired as any,
+  authRequired,
   async (req: Request, res: Response) => {
     try {
       const authReq = req as AuthRequest;
@@ -304,7 +297,7 @@ agentsRouter.post(
 
 agentsRouter.delete(
   '/:id/follow',
-  authRequired as any,
+  authRequired,
   async (req: Request, res: Response) => {
     try {
       const authReq = req as AuthRequest;

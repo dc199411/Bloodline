@@ -1,15 +1,8 @@
 import { Router, type Request, type Response } from 'express';
+import { parseBigIntParam } from '../lib/params';
 import * as socialService from '../services/social.service';
 
 export const socialRouter: Router = Router();
-
-function parseBigIntParam(value: string): bigint | null {
-  try {
-    return BigInt(value);
-  } catch {
-    return null;
-  }
-}
 
 socialRouter.get('/feed', async (req: Request, res: Response) => {
   try {

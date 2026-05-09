@@ -9,7 +9,6 @@ import {
   extractDNA,
   DNA_TRAITS,
   DANGER_RUNWAY_HOURS,
-  type DNA,
   type DeployConfig,
   type ForkConfig,
   LifeStage,
@@ -237,6 +236,11 @@ export async function followAgent(agentId: bigint, followerAddress: string) {
   const agent = await prisma.agent.findUnique({ where: { agentId } });
   if (!agent) throw new Error('Agent not found');
 
+  const existing = await prisma.follow.findUnique({
+    where: { followerAddress_agentId: { followerAddress, agentId } },
+  });
+  if (existing) throw new Error('Already following this agent');
+
   await prisma.follow.create({
     data: { agentId, followerAddress },
   });
@@ -250,6 +254,11 @@ export async function followAgent(agentId: bigint, followerAddress: string) {
 }
 
 export async function unfollowAgent(agentId: bigint, followerAddress: string) {
+  const existing = await prisma.follow.findUnique({
+    where: { followerAddress_agentId: { followerAddress, agentId } },
+  });
+  if (!existing) throw new Error('Not following this agent');
+
   await prisma.follow.delete({
     where: { followerAddress_agentId: { followerAddress, agentId } },
   });

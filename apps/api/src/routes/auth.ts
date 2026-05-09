@@ -6,12 +6,11 @@ import { SiweMessage } from 'siwe';
 import { redis } from '../lib/redis';
 import { prisma } from '../lib/prisma';
 import { validate } from '../middleware/validate';
-import { authRequired } from '../middleware/auth';
-import type { AuthRequest, JWTPayload } from '../types';
+import type { JWTPayload } from '../types';
 
 export const authRouter: Router = Router();
 
-const JWT_SECRET = process.env.JWT_SECRET ?? '';
+const JWT_SECRET = process.env.JWT_SECRET!;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN ?? '24h';
 const REFRESH_EXPIRES_IN = process.env.REFRESH_EXPIRES_IN ?? '7d';
 const NONCE_TTL_SECONDS = 300;

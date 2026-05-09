@@ -6,7 +6,6 @@ import {
   getDaysAlive,
   extractDNA,
   DNA_TRAITS,
-  type DNA,
 } from '@bloodline/shared';
 
 export async function generate(agentId: bigint): Promise<string> {

@@ -1,8 +1,14 @@
-import type { NextFunction, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import type { AuthRequest, JWTPayload } from '../types';
 
-const JWT_SECRET = process.env.JWT_SECRET ?? '';
+function getJWTSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET environment variable is not configured');
+  }
+  return secret;
+}
 
 export function extractToken(req: AuthRequest): string | null {
   const authHeader = req.headers.authorization;
@@ -14,15 +20,16 @@ export function extractToken(req: AuthRequest): string | null {
 
 export function verifyToken(token: string): JWTPayload | null {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+    const decoded = jwt.verify(token, getJWTSecret()) as JWTPayload;
     return decoded;
   } catch {
     return null;
   }
 }
 
-export function authRequired(req: AuthRequest, res: Response, next: NextFunction): void {
-  const token = extractToken(req);
+export function authRequired(req: Request, res: Response, next: NextFunction): void {
+  const authReq = req as AuthRequest;
+  const token = extractToken(authReq);
   if (!token) {
     res.status(401).json({ error: 'Missing or invalid authorization header' });
     return;
@@ -34,6 +41,6 @@ export function authRequired(req: AuthRequest, res: Response, next: NextFunction
     return;
   }
 
-  req.user = payload;
+  authReq.user = payload;
   next();
 }

@@ -53,7 +53,6 @@ export function createDeployWorker(): Worker {
 
       try {
         let dna: DNA;
-        let agentId: bigint;
         let agentName: string;
         let parentId: bigint | null = null;
         let lineageDepth = 0;
@@ -94,32 +93,35 @@ export function createDeployWorker(): Worker {
 
         // Step 5: Register onchain (placeholder)
         emitDeployLog('onchain', 'start', 'Registering onchain...');
-        const nextId = await prisma.agent.findFirst({
-          orderBy: { agentId: 'desc' },
-          select: { agentId: true },
+        const createdAgent = await prisma.$transaction(async (tx) => {
+          const nextId = await tx.agent.findFirst({
+            orderBy: { agentId: 'desc' },
+            select: { agentId: true },
+          });
+          const newAgentId = nextId ? nextId.agentId + BigInt(1) : BigInt(1);
+          return tx.agent.create({
+            data: {
+              agentId: newAgentId,
+              ownerId: userId,
+              name: agentName,
+              description: (data.config as DeployConfig | ForkConfig).description ?? '',
+              metadataUri,
+              stage: 'alive',
+              intelligence: dna.intelligence,
+              speed: dna.speed,
+              creativity: dna.creativity,
+              frugality: dna.frugality,
+              riskAppetite: dna.riskAppetite,
+              socialEnergy: dna.socialEnergy,
+              loyalty: dna.loyalty,
+              resilience: dna.resilience,
+              parentAgentId: parentId,
+              lineageDepth,
+              bornAt: new Date(),
+            },
+          });
         });
-        agentId = nextId ? nextId.agentId + BigInt(1) : BigInt(1);
-        await prisma.agent.create({
-          data: {
-            agentId,
-            ownerId: userId,
-            name: agentName,
-            description: (data.config as DeployConfig | ForkConfig).description ?? '',
-            metadataUri,
-            stage: 'alive',
-            intelligence: dna.intelligence,
-            speed: dna.speed,
-            creativity: dna.creativity,
-            frugality: dna.frugality,
-            riskAppetite: dna.riskAppetite,
-            socialEnergy: dna.socialEnergy,
-            loyalty: dna.loyalty,
-            resilience: dna.resilience,
-            parentAgentId: parentId,
-            lineageDepth,
-            bornAt: new Date(),
-          },
-        });
+        const agentId = createdAgent.agentId;
         emitDeployLog('onchain', 'complete', `Agent ${agentId} registered`);
 
         // Step 6: Start container (placeholder)

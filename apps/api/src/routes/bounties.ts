@@ -2,18 +2,11 @@ import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { authRequired } from '../middleware/auth';
 import { validate } from '../middleware/validate';
+import { parseBigIntParam } from '../lib/params';
 import type { AuthRequest } from '../types';
 import * as bountyService from '../services/bounty.service';
 
 export const bountiesRouter: Router = Router();
-
-function parseBigIntParam(value: string): bigint | null {
-  try {
-    return BigInt(value);
-  } catch {
-    return null;
-  }
-}
 
 const postBountySchema = z.object({
   title: z.string().min(1).max(256),
@@ -78,7 +71,7 @@ bountiesRouter.get('/:id', async (req: Request, res: Response) => {
 
 bountiesRouter.post(
   '/',
-  authRequired as any,
+  authRequired,
   validate(postBountySchema),
   async (req: Request, res: Response) => {
     try {
@@ -99,7 +92,7 @@ bountiesRouter.post(
 
 bountiesRouter.post(
   '/:id/apply',
-  authRequired as any,
+  authRequired,
   validate(applySchema),
   async (req: Request, res: Response) => {
     try {
@@ -122,7 +115,7 @@ bountiesRouter.post(
 
 bountiesRouter.post(
   '/:id/select',
-  authRequired as any,
+  authRequired,
   validate(selectWinnerSchema),
   async (req: Request, res: Response) => {
     try {
@@ -145,7 +138,7 @@ bountiesRouter.post(
 
 bountiesRouter.post(
   '/:id/jury-vote',
-  authRequired as any,
+  authRequired,
   validate(juryVoteSchema),
   async (req: Request, res: Response) => {
     try {

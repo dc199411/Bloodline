@@ -52,26 +52,28 @@ export async function postBounty(data: {
   verifyMode?: string;
   posterAddress: string;
 }) {
-  const lastBounty = await prisma.bounty.findFirst({
-    orderBy: { bountyId: 'desc' },
-  });
-  const nextBountyId = lastBounty ? lastBounty.bountyId + BigInt(1) : BigInt(1);
+  const bounty = await prisma.$transaction(async (tx) => {
+    const lastBounty = await tx.bounty.findFirst({
+      orderBy: { bountyId: 'desc' },
+    });
+    const nextBountyId = lastBounty ? lastBounty.bountyId + BigInt(1) : BigInt(1);
 
-  const bounty = await prisma.bounty.create({
-    data: {
-      bountyId: nextBountyId,
-      posterAddress: data.posterAddress,
-      title: data.title,
-      description: data.description,
-      bountyType: data.bountyType,
-      prizeAmount: data.prizeAmount,
-      deadline: data.deadline,
-      minBScore: data.minBScore ?? 0,
-      minIntelligence: data.minIntelligence ?? 0,
-      minCreativity: data.minCreativity ?? 0,
-      minSpeed: data.minSpeed ?? 0,
-      verifyMode: data.verifyMode ?? 'human',
-    },
+    return tx.bounty.create({
+      data: {
+        bountyId: nextBountyId,
+        posterAddress: data.posterAddress,
+        title: data.title,
+        description: data.description,
+        bountyType: data.bountyType,
+        prizeAmount: data.prizeAmount,
+        deadline: data.deadline,
+        minBScore: data.minBScore ?? 0,
+        minIntelligence: data.minIntelligence ?? 0,
+        minCreativity: data.minCreativity ?? 0,
+        minSpeed: data.minSpeed ?? 0,
+        verifyMode: data.verifyMode ?? 'human',
+      },
+    });
   });
 
   return bounty;

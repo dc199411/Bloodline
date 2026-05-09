@@ -1,10 +1,6 @@
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? '';
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY ?? '';
 
-interface LLMResponse {
-  content: string;
-}
-
 async function callOpenAI(prompt: string, systemPrompt: string): Promise<string> {
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
