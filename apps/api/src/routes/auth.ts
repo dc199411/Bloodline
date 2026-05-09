@@ -10,7 +10,16 @@ import type { JWTPayload } from '../types';
 
 export const authRouter: Router = Router();
 
-const JWT_SECRET = process.env.JWT_SECRET!;
+function getJWTSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) throw new Error('JWT_SECRET environment variable is not configured');
+  return secret;
+}
+
+function getRefreshSecret(): string {
+  return process.env.JWT_REFRESH_SECRET ?? getJWTSecret();
+}
+
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN ?? '24h';
 const REFRESH_EXPIRES_IN = process.env.REFRESH_EXPIRES_IN ?? '7d';
 const NONCE_TTL_SECONDS = 300;
@@ -29,11 +38,11 @@ const refreshSchema = z.object({
 });
 
 function signAccessToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'] });
+  return jwt.sign(payload, getJWTSecret(), { expiresIn: JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'] });
 }
 
 function signRefreshToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: REFRESH_EXPIRES_IN as jwt.SignOptions['expiresIn'] });
+  return jwt.sign(payload, getRefreshSecret(), { expiresIn: REFRESH_EXPIRES_IN as jwt.SignOptions['expiresIn'] });
 }
 
 authRouter.post('/nonce', validate(nonceSchema), async (req: Request, res: Response) => {
@@ -102,7 +111,11 @@ authRouter.post('/verify', validate(verifySchema), async (req: Request, res: Res
     });
   } catch (err) {
     console.error('[Auth] Verification error:', err);
-    res.status(401).json({ error: 'Signature verification failed' });
+    const isAuthError = err instanceof Error &&
+      (err.message.includes('signature') || err.message.includes('nonce') || err.message.includes('Siwe'));
+    res.status(isAuthError ? 401 : 500).json({
+      error: isAuthError ? 'Signature verification failed' : 'Internal server error during verification',
+    });
   }
 });
 
@@ -112,7 +125,7 @@ authRouter.post('/refresh', validate(refreshSchema), async (req: Request, res: R
 
     let decoded: JWTPayload;
     try {
-      decoded = jwt.verify(refreshToken, JWT_SECRET) as JWTPayload;
+      decoded = jwt.verify(refreshToken, getRefreshSecret()) as JWTPayload;
     } catch {
       res.status(401).json({ error: 'Invalid or expired refresh token' });
       return;

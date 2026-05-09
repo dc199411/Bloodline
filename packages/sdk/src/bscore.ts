@@ -3,10 +3,14 @@ import { BloodlineClient } from './client';
 
 export class BScoreAPI extends BloodlineClient {
   async getBScore(agentId: bigint): Promise<number> {
-    const data = await this.fetch<BScoreSnapshot & { composite?: number }>(
+    const data = await this.fetch<BScoreSnapshot>(
       `/bscore/${agentId}`,
     );
-    return data.composite ?? (data as BScoreSnapshot).composite;
+    const composite = data?.composite;
+    if (composite === undefined || composite === null) {
+      throw new Error(`No bScore found for agent ${agentId}`);
+    }
+    return Number(composite);
   }
 
   async getLeaderboard(limit?: number): Promise<LeaderboardEntry[]> {

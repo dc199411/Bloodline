@@ -48,9 +48,9 @@ export default function AgentPage() {
   }
 
   const isDead = agent.stage === "dead";
-  const daysAlive = Math.floor(
-    (Date.now() - new Date(agent.born).getTime()) / (1000 * 60 * 60 * 24)
-  );
+  const bornTime = new Date(agent.born).getTime();
+  const rawDays = (Date.now() - bornTime) / (1000 * 60 * 60 * 24);
+  const daysAlive = Number.isFinite(rawDays) ? Math.max(0, Math.floor(rawDays)) : 0;
 
   return (
     <div className="flex flex-col gap-5 px-4 py-4">

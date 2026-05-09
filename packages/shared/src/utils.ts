@@ -79,7 +79,7 @@ export function calculateBScore(
 
 export function getDaysAlive(bornAt: Date, diedAt?: Date | null): number {
   const end = diedAt ?? new Date();
-  return Math.floor((end.getTime() - bornAt.getTime()) / (1000 * 60 * 60 * 24));
+  return Math.max(0, Math.floor((end.getTime() - bornAt.getTime()) / (1000 * 60 * 60 * 24)));
 }
 
 export function getStageColor(stage: LifeStage): string {

@@ -53,7 +53,7 @@ export function rateLimit(options: RateLimitOptions = {}) {
 
       next();
     } catch (err) {
-      console.error('[RateLimit] Redis error:', err);
+      console.error('[RateLimit] Redis error, failing open:', err);
       next();
     }
   };

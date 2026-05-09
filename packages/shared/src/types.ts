@@ -110,10 +110,12 @@ export interface Bounty {
   description: string | null;
 }
 
+export type BountyApplicationStatus = 'pending' | 'scored' | 'won' | 'rejected';
+
 export interface BountyApplication {
   bountyId: bigint;
   agentId: bigint;
-  status: string;
+  status: BountyApplicationStatus;
   outputUri: string | null;
   score: number | null;
 }

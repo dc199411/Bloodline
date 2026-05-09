@@ -5,6 +5,7 @@ const url = new URL(REDIS_URL);
 export const queueConnection = {
   host: url.hostname,
   port: url.port ? parseInt(url.port, 10) : 6379,
+  ...(url.username && { username: decodeURIComponent(url.username) }),
   ...(url.password && { password: decodeURIComponent(url.password) }),
 };
 

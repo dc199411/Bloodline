@@ -9,7 +9,14 @@ export default function ProfilePage() {
   const [copied, setCopied] = useState(false);
   const mockAddress = "0x7a3f...e2c1";
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
+    try {
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(mockAddress);
+      }
+    } catch {
+      // Clipboard access may be denied in certain contexts
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };

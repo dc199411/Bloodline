@@ -135,7 +135,11 @@ export async function getAgentLineage(agentId: bigint) {
 export async function getRunway(agentId: bigint): Promise<number | null> {
   const cacheKey = `runway:${agentId}`;
   const cached = await redis.get(cacheKey);
-  if (cached) return parseFloat(cached);
+  if (cached) {
+    const parsed = parseFloat(cached);
+    if (Number.isFinite(parsed)) return parsed;
+    await redis.del(cacheKey);
+  }
 
   const agent = await prisma.agent.findUnique({ where: { agentId } });
   if (!agent) return null;
@@ -165,9 +169,11 @@ export async function deployAgent(config: DeployConfig, userId: string) {
 export async function forkAgent(config: ForkConfig, userId: string) {
   const parent = await prisma.agent.findUnique({
     where: { agentId: config.parentId },
+    include: { owner: true },
   });
   if (!parent) throw new Error('Parent agent not found');
   if (parent.stage === LifeStage.Dead) throw new Error('Cannot fork a dead agent');
+  if (parent.owner.id !== userId) throw new Error('Not the owner of this agent');
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error('User not found');
@@ -205,10 +211,14 @@ export async function updateEndpoint(
   return updated;
 }
 
+const MAX_SAVE_AMOUNT = 10_000;
+
 export async function saveAgent(agentId: bigint, amount: number, saverAddress: string) {
   const agent = await prisma.agent.findUnique({ where: { agentId } });
   if (!agent) throw new Error('Agent not found');
   if (agent.stage === LifeStage.Dead) throw new Error('Cannot save a dead agent');
+  if (amount <= 0 || !Number.isFinite(amount)) throw new Error('Invalid amount');
+  if (amount > MAX_SAVE_AMOUNT) throw new Error(`Amount exceeds maximum of ${MAX_SAVE_AMOUNT}`);
 
   const balanceKey = `balance:${agentId}`;
   await redis.incrbyfloat(balanceKey, amount);
