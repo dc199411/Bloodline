@@ -68,16 +68,16 @@ export class AgentAPI extends BloodlineClient {
     }
 
     this._token = token;
-    const before = await this.fetch<AgentsListResponse>(
-      `/agents?owner=${walletAddress}&limit=100`,
-    );
-    const beforeIds = new Set(before.agents.map((a) => a.agentId.toString()));
-
-    const pollInterval = 2000;
-    const maxWait = 5 * 60 * 1000;
-    const start = Date.now();
-
     try {
+      const before = await this.fetch<AgentsListResponse>(
+        `/agents?owner=${walletAddress}&limit=100`,
+      );
+      const beforeIds = new Set(before.agents.map((a) => a.agentId.toString()));
+
+      const pollInterval = 2000;
+      const maxWait = 5 * 60 * 1000;
+      const start = Date.now();
+
       while (Date.now() - start < maxWait) {
         await new Promise((r) => setTimeout(r, pollInterval));
         const after = await this.fetch<AgentsListResponse>(
@@ -120,16 +120,16 @@ export class AgentAPI extends BloodlineClient {
     }
 
     this._token = token;
-    const before = await this.fetch<AgentsListResponse>(
-      `/agents?owner=${walletAddress}&limit=100`,
-    );
-    const beforeIds = new Set(before.agents.map((a) => a.agentId.toString()));
-
-    const pollInterval = 2000;
-    const maxWait = 5 * 60 * 1000;
-    const start = Date.now();
-
     try {
+      const before = await this.fetch<AgentsListResponse>(
+        `/agents?owner=${walletAddress}&limit=100`,
+      );
+      const beforeIds = new Set(before.agents.map((a) => a.agentId.toString()));
+
+      const pollInterval = 2000;
+      const maxWait = 5 * 60 * 1000;
+      const start = Date.now();
+
       while (Date.now() - start < maxWait) {
         await new Promise((r) => setTimeout(r, pollInterval));
         const after = await this.fetch<AgentsListResponse>(

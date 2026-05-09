@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from 'express';
 import { prisma } from '../lib/prisma';
+import { parseBigIntParam } from '../lib/params';
 
 export const lineageRouter: Router = Router();
 
@@ -41,14 +42,6 @@ async function buildDescendantTree(rootAgentId: bigint, depth = 0): Promise<Line
     lineageDepth: agent.lineageDepth,
     children: childNodes,
   };
-}
-
-function parseBigIntParam(value: string): bigint | null {
-  try {
-    return BigInt(value);
-  } catch {
-    return null;
-  }
 }
 
 lineageRouter.get('/:rootId/tree', async (req: Request, res: Response) => {

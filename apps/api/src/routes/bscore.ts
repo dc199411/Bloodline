@@ -1,15 +1,8 @@
 import { Router, type Request, type Response } from 'express';
+import { parseBigIntParam } from '../lib/params';
 import * as bscoreService from '../services/bscore.service';
 
 export const bscoreRouter: Router = Router();
-
-function parseBigIntParam(value: string): bigint | null {
-  try {
-    return BigInt(value);
-  } catch {
-    return null;
-  }
-}
 
 bscoreRouter.get('/leaderboard', async (_req: Request, res: Response) => {
   try {

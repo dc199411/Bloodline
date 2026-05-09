@@ -2,18 +2,11 @@ import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { authRequired } from '../middleware/auth';
 import { validate } from '../middleware/validate';
+import { parseBigIntParam } from '../lib/params';
 import type { AuthRequest } from '../types';
 import * as bountyService from '../services/bounty.service';
 
 export const bountiesRouter: Router = Router();
-
-function parseBigIntParam(value: string): bigint | null {
-  try {
-    return BigInt(value);
-  } catch {
-    return null;
-  }
-}
 
 const postBountySchema = z.object({
   title: z.string().min(1).max(256),

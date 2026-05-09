@@ -11,7 +11,10 @@ import type { AuthRequest, JWTPayload } from '../types';
 
 export const authRouter: Router = Router();
 
-const JWT_SECRET = process.env.JWT_SECRET ?? '';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required');
+}
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN ?? '24h';
 const REFRESH_EXPIRES_IN = process.env.REFRESH_EXPIRES_IN ?? '7d';
 const NONCE_TTL_SECONDS = 300;

@@ -84,11 +84,11 @@ export function getDaysAlive(bornAt: Date, diedAt?: Date | null): number {
 
 export function getStageColor(stage: LifeStage): string {
   switch (stage) {
+    case LifeStage.Unborn: return '#888888';
     case LifeStage.Alive: return '#00FF87';
     case LifeStage.Thriving: return '#FFD700';
     case LifeStage.Dead: return '#555555';
     case LifeStage.Ascended: return '#FF1A1A';
-    default: return '#555555';
   }
 }
 
