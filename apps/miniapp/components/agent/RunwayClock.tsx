@@ -32,7 +32,8 @@ export function RunwayClock({ hours, compact }: RunwayClockProps) {
     return () => clearInterval(interval);
   }, []);
 
-  const isDanger = hours < 72;
+  const remainingHours = remaining / 3600;
+  const isDanger = remainingHours < 72;
   const color = remaining <= 0 ? "var(--muted)" : isDanger ? "var(--dying)" : "var(--live)";
 
   if (compact) {

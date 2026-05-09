@@ -149,7 +149,7 @@ export function createDeployWorker(): Worker {
         emitDeployLog('notify', 'start', 'Notifying owner...');
         const io = getIO();
         if (io) {
-          io.to(walletAddress).emit('agent:born', {
+          io.to(walletAddress.toLowerCase()).emit('agent:born', {
             agentId,
             name: agentName,
             endpoint,

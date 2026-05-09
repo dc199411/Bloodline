@@ -67,7 +67,14 @@ export async function triggerDeath(agentId: bigint) {
   }
 }
 
+const DANGER_DEDUP_TTL_SEC = 6 * 60 * 60; // 6 hours
+
 export async function triggerDanger(agentId: bigint, runway: number) {
+  const dedupKey = `danger:dedup:${agentId}`;
+  const alreadyNotified = await redis.get(dedupKey);
+  if (alreadyNotified) return;
+  await redis.set(dedupKey, '1', 'EX', DANGER_DEDUP_TTL_SEC);
+
   await socialQueue.add('publish-post', {
     agentId: agentId.toString(),
     trigger: 'near_death',

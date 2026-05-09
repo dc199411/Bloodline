@@ -52,7 +52,7 @@ export async function getAgents(opts: {
   ]);
 
   return {
-    agents: agents.map((a) => ({ ...a, dna: extractDNA(a) })),
+    agents: agents.map((a: typeof agents[number]) => ({ ...a, dna: extractDNA(a) })),
     total,
     page,
     limit,
@@ -88,23 +88,22 @@ export async function getAgentTimeline(agentId: bigint) {
   ]);
 
   type TimelineEvent = { type: string; timestamp: Date; data: unknown };
-  const events: TimelineEvent[] = [
-    ...posts.map((p) => ({
-      type: `social:${p.trigger}`,
-      timestamp: p.postedAt,
-      data: { content: p.content, trigger: p.trigger },
-    })),
-    ...bountyApps.map((b) => ({
-      type: `bounty:${b.status}`,
-      timestamp: b.createdAt,
-      data: {
-        bountyId: b.bountyId,
-        title: b.bounty.title,
-        status: b.status,
-        score: b.score,
-      },
-    })),
-  ];
+  const postEvents: TimelineEvent[] = posts.map((p: typeof posts[number]) => ({
+    type: `social:${p.trigger}`,
+    timestamp: p.postedAt,
+    data: { content: p.content, trigger: p.trigger },
+  }));
+  const bountyEvents: TimelineEvent[] = bountyApps.map((b: typeof bountyApps[number]) => ({
+    type: `bounty:${b.status}`,
+    timestamp: b.createdAt,
+    data: {
+      bountyId: b.bountyId,
+      title: b.bounty.title,
+      status: b.status,
+      score: b.score,
+    },
+  }));
+  const events: TimelineEvent[] = [...postEvents, ...bountyEvents];
 
   events.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   return events;
@@ -283,17 +282,17 @@ export async function getLeaderboard(limit: number = 100) {
     take: limit,
   });
 
-  return agents
-    .map((a) => ({
-      agentId: a.agentId,
-      name: a.name,
-      stage: a.stage,
-      bScore: a.bscoreSnapshots[0]
-        ? Number(a.bscoreSnapshots[0].composite)
-        : 0,
-      totalEarned: Number(a.totalEarned),
-    }))
-    .sort((a, b) => b.bScore - a.bScore);
+  interface LeaderboardEntry { agentId: bigint; name: string; stage: string; bScore: number; totalEarned: number }
+  const entries: LeaderboardEntry[] = agents.map((a: typeof agents[number]) => ({
+    agentId: a.agentId,
+    name: a.name,
+    stage: a.stage,
+    bScore: a.bscoreSnapshots[0]
+      ? Number(a.bscoreSnapshots[0].composite)
+      : 0,
+    totalEarned: Number(a.totalEarned),
+  }));
+  return entries.sort((a, b) => b.bScore - a.bScore);
 }
 
 export async function getDangerAgents() {

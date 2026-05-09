@@ -32,8 +32,12 @@ function signAccessToken(payload: JWTPayload): string {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'] });
 }
 
+function getRefreshSecret(): string {
+  return process.env.JWT_REFRESH_SECRET || JWT_SECRET;
+}
+
 function signRefreshToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: REFRESH_EXPIRES_IN as jwt.SignOptions['expiresIn'] });
+  return jwt.sign(payload, getRefreshSecret(), { expiresIn: REFRESH_EXPIRES_IN as jwt.SignOptions['expiresIn'] });
 }
 
 authRouter.post('/nonce', validate(nonceSchema), async (req: Request, res: Response) => {
@@ -56,6 +60,12 @@ authRouter.post('/verify', validate(verifySchema), async (req: Request, res: Res
 
     const siweMessage = new SiweMessage(message);
     const { data: fields } = await siweMessage.verify({ signature });
+
+    const allowedDomain = process.env.SIWE_DOMAIN;
+    if (allowedDomain && fields.domain !== allowedDomain) {
+      res.status(401).json({ error: 'Invalid SIWE domain' });
+      return;
+    }
 
     const storedNonce = await redis.get(`nonce:${fields.address.toLowerCase()}`);
     if (!storedNonce || storedNonce !== fields.nonce) {
@@ -112,7 +122,7 @@ authRouter.post('/refresh', validate(refreshSchema), async (req: Request, res: R
 
     let decoded: JWTPayload;
     try {
-      decoded = jwt.verify(refreshToken, JWT_SECRET) as JWTPayload;
+      decoded = jwt.verify(refreshToken, getRefreshSecret()) as JWTPayload;
     } catch {
       res.status(401).json({ error: 'Invalid or expired refresh token' });
       return;

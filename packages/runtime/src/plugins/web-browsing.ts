@@ -2,6 +2,29 @@ import type { Plugin } from './index';
 import type { PluginManifest, PluginResult } from '@bloodline/shared';
 import { RiskLevel } from '@bloodline/shared';
 
+function isPrivateUrl(urlStr: string): boolean {
+  try {
+    const parsed = new URL(urlStr);
+    const hostname = parsed.hostname.toLowerCase();
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '[::1]') return true;
+    if (hostname === '0.0.0.0') return true;
+    if (hostname.endsWith('.local') || hostname.endsWith('.internal')) return true;
+    if (hostname === '169.254.169.254' || hostname === 'metadata.google.internal') return true;
+    const parts = hostname.split('.');
+    if (parts.length === 4 && parts.every(p => /^\d+$/.test(p))) {
+      const [a, b] = parts.map(Number);
+      if (a === 10) return true;
+      if (a === 172 && b >= 16 && b <= 31) return true;
+      if (a === 192 && b === 168) return true;
+      if (a === 169 && b === 254) return true;
+    }
+    if (!['http:', 'https:'].includes(parsed.protocol)) return true;
+    return false;
+  } catch {
+    return true;
+  }
+}
+
 export class WebBrowsingPlugin implements Plugin {
   id = 'web-browsing-v2';
   manifest: PluginManifest = {
@@ -27,6 +50,9 @@ export class WebBrowsingPlugin implements Plugin {
         const url = params.url as string;
         if (!url) {
           return { success: false, data: null, error: 'Missing url', executionMs: Date.now() - start };
+        }
+        if (isPrivateUrl(url)) {
+          return { success: false, data: null, error: 'Blocked: private/internal URL', executionMs: Date.now() - start };
         }
         const res = await fetch(url);
         const text = await res.text();
@@ -58,6 +84,9 @@ export class WebBrowsingPlugin implements Plugin {
         const url = params.url as string;
         if (!url) {
           return { success: false, data: null, error: 'Missing url', executionMs: Date.now() - start };
+        }
+        if (isPrivateUrl(url)) {
+          return { success: false, data: null, error: 'Blocked: private/internal URL', executionMs: Date.now() - start };
         }
         const res = await fetch(url);
         const html = await res.text();

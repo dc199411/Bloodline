@@ -37,11 +37,9 @@ function computeStatsFromAgent(agent: {
   const totalEarned = Number(agent.totalEarned.toString());
   const daysAlive = getDaysAlive(agent.bornAt ?? agent.createdAt, agent.diedAt);
   const wonBounties = agent.bountyApps?.filter((b) => b.status === 'won').length ?? 0;
-  const avgScore = agent.bountyApps?.length
-    ? agent.bountyApps
-        .filter((b) => b.score != null)
-        .reduce((sum, b) => sum + Number(b.score!.toString()), 0) /
-      agent.bountyApps.length
+  const scoredApps = agent.bountyApps?.filter((b) => b.score != null) ?? [];
+  const avgScore = scoredApps.length > 0
+    ? scoredApps.reduce((sum, b) => sum + Number(b.score!.toString()), 0) / scoredApps.length
     : 0;
 
   return {

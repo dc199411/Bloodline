@@ -267,6 +267,7 @@ Execute this step and provide the result.`;
           }),
           signal: AbortSignal.timeout(30000),
         });
+        if (!res.ok) throw new Error(`OpenAI API error: ${res.status}`);
         const data = await res.json() as {
           choices?: Array<{ message?: { content?: string } }>;
           usage?: { total_tokens?: number };
@@ -302,6 +303,7 @@ Execute this step and provide the result.`;
           }),
           signal: AbortSignal.timeout(30000),
         });
+        if (!res.ok) throw new Error(`Anthropic API error: ${res.status}`);
         const data = await res.json() as {
           content?: Array<{ text?: string }>;
           usage?: { input_tokens?: number; output_tokens?: number };
@@ -326,7 +328,6 @@ Execute this step and provide the result.`;
         action: step.action,
         result: `Executed: ${step.description}`,
         mode: 'simulation',
-        systemPromptPreview: systemPrompt.slice(0, 120) + '...',
       },
       tokensUsed: 0,
     };

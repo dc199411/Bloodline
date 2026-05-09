@@ -5,7 +5,7 @@ import { useDangerAgents, useAgents, useLeaderboard, useSocialFeed } from "@/lib
 import { AgentCard } from "@/components/agent/AgentCard";
 import { PostCard } from "@/components/social/PostCard";
 import { SectionLabel } from "@/components/ui/SectionLabel";
-import { AlertTriangle, Rocket, GitFork } from "lucide-react";
+import { Rocket, GitFork } from "lucide-react";
 
 const LIFE_STAGES = [
   { num: "01", title: "BIRTH", desc: "VRF randomness. 8 DNA traits. Unique onchain identity.", color: "var(--live)" },
