@@ -1,16 +1,22 @@
 import * as agentService from '../src/services/agent.service';
 import type { DeployConfig } from '@bloodline/shared';
 
-jest.mock('../src/lib/prisma', () => ({
-  prisma: {
-    agent: { findUnique: jest.fn(), findMany: jest.fn(), update: jest.fn() },
+jest.mock('../src/lib/prisma', () => {
+  const mockTx = {
+    agent: { findUnique: jest.fn(), findMany: jest.fn(), update: jest.fn(), count: jest.fn() },
     user: { findUnique: jest.fn(), findFirst: jest.fn() },
-    follow: { create: jest.fn(), delete: jest.fn(), findMany: jest.fn() },
+    follow: { create: jest.fn(), delete: jest.fn(), findMany: jest.fn(), findUnique: jest.fn() },
     bScoreSnapshot: { findFirst: jest.fn(), findMany: jest.fn() },
     socialPost: { findMany: jest.fn() },
     bountyApplication: { findMany: jest.fn() },
-  },
-}));
+  };
+  return {
+    prisma: {
+      ...mockTx,
+      $transaction: jest.fn((fn: (tx: typeof mockTx) => Promise<unknown>) => fn(mockTx)),
+    },
+  };
+});
 jest.mock('../src/lib/redis', () => ({
   redis: {
     get: jest.fn(),

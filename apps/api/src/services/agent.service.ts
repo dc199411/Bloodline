@@ -233,45 +233,49 @@ export async function saveAgent(agentId: bigint, amount: number, saverAddress: s
 }
 
 export async function followAgent(agentId: bigint, followerAddress: string) {
-  const agent = await prisma.agent.findUnique({ where: { agentId } });
-  if (!agent) throw new Error('Agent not found');
+  return prisma.$transaction(async (tx) => {
+    const agent = await tx.agent.findUnique({ where: { agentId } });
+    if (!agent) throw new Error('Agent not found');
 
-  const existing = await prisma.follow.findUnique({
-    where: { followerAddress_agentId: { followerAddress, agentId } },
+    const existing = await tx.follow.findUnique({
+      where: { followerAddress_agentId: { followerAddress, agentId } },
+    });
+    if (existing) throw new Error('Already following this agent');
+
+    await tx.follow.create({
+      data: { agentId, followerAddress },
+    });
+
+    await tx.agent.update({
+      where: { agentId },
+      data: { followerCount: { increment: 1 } },
+    });
+
+    return { followed: true };
   });
-  if (existing) throw new Error('Already following this agent');
-
-  await prisma.follow.create({
-    data: { agentId, followerAddress },
-  });
-
-  await prisma.agent.update({
-    where: { agentId },
-    data: { followerCount: { increment: 1 } },
-  });
-
-  return { followed: true };
 }
 
 export async function unfollowAgent(agentId: bigint, followerAddress: string) {
-  const existing = await prisma.follow.findUnique({
-    where: { followerAddress_agentId: { followerAddress, agentId } },
-  });
-  if (!existing) throw new Error('Not following this agent');
-
-  await prisma.follow.delete({
-    where: { followerAddress_agentId: { followerAddress, agentId } },
-  });
-
-  const agent = await prisma.agent.findUnique({ where: { agentId }, select: { followerCount: true } });
-  if (agent && agent.followerCount > 0) {
-    await prisma.agent.update({
-      where: { agentId },
-      data: { followerCount: { decrement: 1 } },
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.follow.findUnique({
+      where: { followerAddress_agentId: { followerAddress, agentId } },
     });
-  }
+    if (!existing) throw new Error('Not following this agent');
 
-  return { unfollowed: true };
+    await tx.follow.delete({
+      where: { followerAddress_agentId: { followerAddress, agentId } },
+    });
+
+    const agent = await tx.agent.findUnique({ where: { agentId }, select: { followerCount: true } });
+    if (agent && agent.followerCount > 0) {
+      await tx.agent.update({
+        where: { agentId },
+        data: { followerCount: { decrement: 1 } },
+      });
+    }
+
+    return { unfollowed: true };
+  });
 }
 
 export async function getLeaderboard(limit: number = 100) {
@@ -294,7 +298,7 @@ export async function getLeaderboard(limit: number = 100) {
         : 0,
       totalEarned: Number(a.totalEarned),
     }))
-    .sort((a, b) => b.bScore - a.bScore);
+    .sort((a: { bScore: number }, b: { bScore: number }) => b.bScore - a.bScore);
 }
 
 export async function getDangerAgents() {

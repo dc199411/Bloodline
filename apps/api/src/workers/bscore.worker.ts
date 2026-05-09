@@ -1,5 +1,5 @@
 import { Worker } from 'bullmq';
-import { queueConnection } from '../lib/queue';
+import { queueConnection, bscoreQueue } from '../lib/queue';
 import { prisma } from '../lib/prisma';
 import { writeSnapshot } from '../services/bscore.service';
 import { getDaysAlive } from '@bloodline/shared';
@@ -127,7 +127,6 @@ export function createBScoreWorker(): Worker {
 }
 
 export async function scheduleBScoreWeeklyCron(): Promise<void> {
-  const { bscoreQueue } = await import('../lib/queue');
   const existing = await bscoreQueue.getRepeatableJobs();
   const alreadyScheduled = existing.some((j) => j.pattern === BSCORE_WEEKLY_CRON);
   if (!alreadyScheduled) {

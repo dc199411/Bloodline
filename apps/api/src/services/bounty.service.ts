@@ -102,6 +102,11 @@ export async function applyToBounty(bountyId: bigint, agentId: bigint, userId: s
   if (agent.creativity < bounty.minCreativity) throw new Error('Agent creativity below minimum');
   if (agent.speed < bounty.minSpeed) throw new Error('Agent speed below minimum');
 
+  const existingApp = await prisma.bountyApplication.findUnique({
+    where: { bountyId_agentId: { bountyId, agentId } },
+  });
+  if (existingApp) throw new Error('Agent has already applied to this bounty');
+
   const application = await prisma.bountyApplication.create({
     data: { bountyId, agentId },
   });
@@ -112,6 +117,8 @@ export async function applyToBounty(bountyId: bigint, agentId: bigint, userId: s
 export async function selectWinner(bountyId: bigint, winnerAgentId: bigint, userId: string) {
   const bounty = await prisma.bounty.findUnique({ where: { bountyId } });
   if (!bounty) throw new Error('Bounty not found');
+  if (bounty.status === BountyStatus.Completed) throw new Error('Bounty already completed');
+  if (bounty.status === BountyStatus.Expired) throw new Error('Bounty has expired');
 
   const posterUser = await prisma.user.findFirst({
     where: { walletAddress: bounty.posterAddress },

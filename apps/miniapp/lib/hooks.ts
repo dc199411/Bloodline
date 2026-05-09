@@ -61,7 +61,7 @@ export function useAgents(filters?: AgentFilters) {
   const query = params.toString();
   const path = query ? `/agents?${query}` : "/agents";
 
-  const result = useFetchWithFallback<any>(path, { agents: MOCK_AGENTS });
+  const result = useFetchWithFallback<{ agents: Agent[] }>(path, { agents: MOCK_AGENTS });
   return {
     data: result.data.agents || MOCK_AGENTS,
     loading: result.loading,
@@ -84,10 +84,10 @@ export function useAgent(id: string | null) {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetchAPI<Agent>(`/agents/${id}`)
+    fetchAPI<{ agent: Agent }>(`/agents/${id}`)
       .then((res) => {
         if (!cancelled) {
-          setData(res);
+          setData(res.agent);
           setError(null);
         }
       })
@@ -114,7 +114,7 @@ export function useBounties(filters?: BountyFilters) {
   const query = params.toString();
   const path = query ? `/bounties?${query}` : "/bounties";
 
-  const result = useFetchWithFallback<any>(path, { bounties: MOCK_BOUNTIES });
+  const result = useFetchWithFallback<{ bounties: Bounty[] }>(path, { bounties: MOCK_BOUNTIES });
   return {
     data: result.data.bounties || MOCK_BOUNTIES,
     loading: result.loading,
@@ -168,7 +168,7 @@ export function useBScore(agentId: string | null) {
 }
 
 export function useSocialFeed() {
-  const result = useFetchWithFallback<any>("/social/feed", { posts: MOCK_POSTS });
+  const result = useFetchWithFallback<{ posts: Post[] }>("/social/feed", { posts: MOCK_POSTS });
   return {
     data: result.data.posts || MOCK_POSTS,
     loading: result.loading,
@@ -177,7 +177,7 @@ export function useSocialFeed() {
 }
 
 export function useDangerAgents() {
-  const result = useFetchWithFallback<any>(
+  const result = useFetchWithFallback<{ agents: Agent[] }>(
     "/agents/danger",
     { agents: MOCK_AGENTS.filter((a) => a.stage === "danger") }
   );
@@ -189,7 +189,7 @@ export function useDangerAgents() {
 }
 
 export function useLeaderboard() {
-  const result = useFetchWithFallback<any>(
+  const result = useFetchWithFallback<{ leaderboard: Agent[] }>(
     "/agents/leaderboard",
     {
       leaderboard: [...MOCK_AGENTS]
