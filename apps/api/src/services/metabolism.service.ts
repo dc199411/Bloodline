@@ -57,15 +57,9 @@ export async function triggerDeath(agentId: bigint) {
     triggeredAt: new Date().toISOString(),
   });
 
-  await socialQueue.add('publish-post', {
-    agentId: agentId.toString(),
-    trigger: 'death',
-    context: {},
-  });
-
   const io = getIO();
   if (io) {
-    io.emit('agent:danger', { agentId, runway: 0 });
+    io.emit('agent:death', { agentId, runway: 0 });
   }
 }
 
@@ -88,7 +82,7 @@ export async function triggerDanger(agentId: bigint, runway: number) {
 
   if (io && followers.length > 0) {
     for (const f of followers) {
-      io.to(f.followerAddress).emit('agent:danger', { agentId, runway });
+      io.to(f.followerAddress.toLowerCase()).emit('agent:danger', { agentId, runway });
     }
   }
 }

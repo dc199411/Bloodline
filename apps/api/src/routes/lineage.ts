@@ -78,7 +78,16 @@ lineageRouter.get('/:agentId/ancestors', async (req: Request, res: Response) => 
       lineageDepth: number;
     }> = [];
 
-    let currentId: bigint | null = agentId;
+    const self = await prisma.agent.findUnique({
+      where: { agentId },
+      select: { parentAgentId: true },
+    });
+    if (!self) {
+      res.status(404).json({ error: 'Agent not found' });
+      return;
+    }
+
+    let currentId: bigint | null = self.parentAgentId;
     let iterations = 0;
 
     while (currentId !== null && iterations < MAX_ANCESTOR_DEPTH) {

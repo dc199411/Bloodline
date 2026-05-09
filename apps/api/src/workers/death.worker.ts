@@ -1,6 +1,5 @@
 import { Worker } from 'bullmq';
-import { queueConnection } from '../lib/queue';
-import { socialQueue } from '../lib/queue';
+import { queueConnection, socialQueue } from '../lib/queue';
 import { prisma } from '../lib/prisma';
 import { redis } from '../lib/redis';
 import { getIO } from '../lib/ws';
@@ -80,7 +79,7 @@ export function createDeathWorker(): Worker {
         });
         if (io && followers.length > 0) {
           for (const f of followers) {
-            io.to(f.followerAddress).emit('agent:died', { agentId, lastWill });
+            io.to(f.followerAddress.toLowerCase()).emit('agent:died', { agentId, lastWill });
           }
         }
 

@@ -135,7 +135,14 @@ export async function getAgentLineage(agentId: bigint) {
 export async function getRunway(agentId: bigint): Promise<number | null> {
   const cacheKey = `runway:${agentId}`;
   const cached = await redis.get(cacheKey);
-  if (cached) return parseFloat(cached);
+  if (cached) {
+    const parsed = parseFloat(cached);
+    if (!Number.isFinite(parsed)) {
+      await redis.del(cacheKey);
+    } else {
+      return parsed;
+    }
+  }
 
   const agent = await prisma.agent.findUnique({ where: { agentId } });
   if (!agent) return null;

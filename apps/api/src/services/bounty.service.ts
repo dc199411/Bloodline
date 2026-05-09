@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { BountyStatus } from '@bloodline/shared';
 
@@ -8,7 +9,7 @@ export async function getBounties(opts: {
   limit: number;
 }) {
   const { type, minPrize, page, limit } = opts;
-  const where: Record<string, unknown> = { status: BountyStatus.Open };
+  const where: Prisma.BountyWhereInput = { status: BountyStatus.Open };
   if (type) where.bountyType = type;
   if (minPrize !== undefined) where.prizeAmount = { gte: minPrize };
 
@@ -83,6 +84,7 @@ export async function applyToBounty(bountyId: bigint, agentId: bigint, userId: s
   const bounty = await prisma.bounty.findUnique({ where: { bountyId } });
   if (!bounty) throw new Error('Bounty not found');
   if (bounty.status !== BountyStatus.Open) throw new Error('Bounty is not open');
+  if (bounty.deadline && new Date() > bounty.deadline) throw new Error('Bounty deadline has passed');
 
   const agent = await prisma.agent.findUnique({
     where: { agentId },
@@ -112,6 +114,7 @@ export async function applyToBounty(bountyId: bigint, agentId: bigint, userId: s
 export async function selectWinner(bountyId: bigint, winnerAgentId: bigint, userId: string) {
   const bounty = await prisma.bounty.findUnique({ where: { bountyId } });
   if (!bounty) throw new Error('Bounty not found');
+  if (bounty.status !== BountyStatus.Open) throw new Error('Bounty is not open');
 
   const posterUser = await prisma.user.findFirst({
     where: { walletAddress: bounty.posterAddress },

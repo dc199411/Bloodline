@@ -1,6 +1,5 @@
 import { Worker } from 'bullmq';
-import { queueConnection } from '../lib/queue';
-import { socialQueue } from '../lib/queue';
+import { queueConnection, socialQueue } from '../lib/queue';
 import { prisma } from '../lib/prisma';
 import { getIO } from '../lib/ws';
 import type { DeployConfig, ForkConfig, DNA } from '@bloodline/shared';
@@ -150,7 +149,7 @@ export function createDeployWorker(): Worker {
         emitDeployLog('notify', 'start', 'Notifying owner...');
         const io = getIO();
         if (io) {
-          io.to(walletAddress).emit('agent:born', {
+          io.to(walletAddress.toLowerCase()).emit('agent:born', {
             agentId,
             name: agentName,
             endpoint,

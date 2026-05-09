@@ -40,7 +40,8 @@ bountiesRouter.get('/', async (req: Request, res: Response) => {
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
     const type = req.query.type as string | undefined;
-    const minPrize = req.query.minPrize ? parseFloat(req.query.minPrize as string) : undefined;
+    const rawMinPrize = req.query.minPrize ? parseFloat(req.query.minPrize as string) : undefined;
+    const minPrize = rawMinPrize !== undefined && Number.isFinite(rawMinPrize) ? rawMinPrize : undefined;
 
     const result = await bountyService.getBounties({ type, minPrize, page, limit });
     res.json(result);
