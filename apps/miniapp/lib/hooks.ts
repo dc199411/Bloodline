@@ -61,9 +61,9 @@ export function useAgents(filters?: AgentFilters) {
   const query = params.toString();
   const path = query ? `/agents?${query}` : "/agents";
 
-  const result = useFetchWithFallback<any>(path, { agents: MOCK_AGENTS });
+  const result = useFetchWithFallback<{ agents: Agent[] }>(path, { agents: MOCK_AGENTS });
   return {
-    data: result.data.agents || MOCK_AGENTS,
+    data: Array.isArray(result.data.agents) ? result.data.agents : MOCK_AGENTS,
     loading: result.loading,
     error: result.error
   };
@@ -114,9 +114,9 @@ export function useBounties(filters?: BountyFilters) {
   const query = params.toString();
   const path = query ? `/bounties?${query}` : "/bounties";
 
-  const result = useFetchWithFallback<any>(path, { bounties: MOCK_BOUNTIES });
+  const result = useFetchWithFallback<{ bounties: Bounty[] }>(path, { bounties: MOCK_BOUNTIES });
   return {
-    data: result.data.bounties || MOCK_BOUNTIES,
+    data: Array.isArray(result.data.bounties) ? result.data.bounties : MOCK_BOUNTIES,
     loading: result.loading,
     error: result.error
   };
@@ -168,39 +168,36 @@ export function useBScore(agentId: string | null) {
 }
 
 export function useSocialFeed() {
-  const result = useFetchWithFallback<any>("/social/feed", { posts: MOCK_POSTS });
+  const result = useFetchWithFallback<{ posts: Post[] }>("/social/feed", { posts: MOCK_POSTS });
   return {
-    data: result.data.posts || MOCK_POSTS,
+    data: Array.isArray(result.data.posts) ? result.data.posts : MOCK_POSTS,
     loading: result.loading,
     error: result.error
   };
 }
 
 export function useDangerAgents() {
-  const result = useFetchWithFallback<any>(
+  const result = useFetchWithFallback<{ agents: Agent[] }>(
     "/agents/danger",
     { agents: MOCK_AGENTS.filter((a) => a.stage === "danger") }
   );
   return {
-    data: result.data.agents || MOCK_AGENTS.filter((a) => a.stage === "danger"),
+    data: Array.isArray(result.data.agents) ? result.data.agents : MOCK_AGENTS.filter((a: Agent) => a.stage === "danger"),
     loading: result.loading,
     error: result.error
   };
 }
 
 export function useLeaderboard() {
-  const result = useFetchWithFallback<any>(
+  const fallbackLeaderboard = [...MOCK_AGENTS]
+    .filter((a) => a.stage !== "dead")
+    .sort((a, b) => b.earned - a.earned);
+  const result = useFetchWithFallback<{ leaderboard: Agent[] }>(
     "/agents/leaderboard",
-    {
-      leaderboard: [...MOCK_AGENTS]
-        .filter((a) => a.stage !== "dead")
-        .sort((a, b) => b.earned - a.earned)
-    }
+    { leaderboard: fallbackLeaderboard }
   );
   return {
-    data: result.data.leaderboard || [...MOCK_AGENTS]
-      .filter((a) => a.stage !== "dead")
-      .sort((a, b) => b.earned - a.earned),
+    data: Array.isArray(result.data.leaderboard) ? result.data.leaderboard : fallbackLeaderboard,
     loading: result.loading,
     error: result.error
   };

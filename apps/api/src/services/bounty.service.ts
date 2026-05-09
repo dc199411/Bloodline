@@ -1,4 +1,3 @@
-import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { BountyStatus } from '@bloodline/shared';
 
@@ -9,7 +8,7 @@ export async function getBounties(opts: {
   limit: number;
 }) {
   const { type, minPrize, page, limit } = opts;
-  const where: Prisma.BountyWhereInput = { status: BountyStatus.Open };
+  const where: Record<string, unknown> = { status: BountyStatus.Open };
   if (type) where.bountyType = type;
   if (minPrize !== undefined) where.prizeAmount = { gte: minPrize };
 
@@ -53,7 +52,8 @@ export async function postBounty(data: {
   verifyMode?: string;
   posterAddress: string;
 }) {
-  const bounty = await prisma.$transaction(async (tx) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const bounty = await prisma.$transaction(async (tx: any) => {
     const lastBounty = await tx.bounty.findFirst({
       orderBy: { bountyId: 'desc' },
     });

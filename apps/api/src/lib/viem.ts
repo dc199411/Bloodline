@@ -12,7 +12,7 @@ import { base } from 'viem/chains';
 const BASE_RPC_URL = process.env.BASE_RPC_URL ?? 'https://mainnet.base.org';
 const CHAIN_ID = Number(process.env.CHAIN_ID ?? 8453);
 
-const chain: Chain = {
+export const chain: Chain = {
   ...base,
   id: CHAIN_ID,
 };

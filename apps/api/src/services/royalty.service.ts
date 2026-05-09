@@ -1,4 +1,4 @@
-import { getWalletClient } from '../lib/viem';
+import { getWalletClient, chain } from '../lib/viem';
 
 const ROYALTY_ROUTER_ADDRESS = process.env.ROYALTY_ROUTER_ADDRESS as `0x${string}` | undefined;
 
@@ -30,6 +30,7 @@ export async function routeEarning(agentId: bigint, amount: bigint) {
   if (!ROYALTY_ROUTER_ADDRESS) throw new Error('Royalty router address not configured');
 
   const hash = await walletClient.writeContract({
+    chain,
     account: walletClient.account!,
     address: ROYALTY_ROUTER_ADDRESS,
     abi: ROYALTY_ROUTER_ABI,
@@ -46,6 +47,7 @@ export async function distributeLegacyPool(deadAgentId: bigint) {
   if (!ROYALTY_ROUTER_ADDRESS) throw new Error('Royalty router address not configured');
 
   const hash = await walletClient.writeContract({
+    chain,
     account: walletClient.account!,
     address: ROYALTY_ROUTER_ADDRESS,
     abi: ROYALTY_ROUTER_ABI,

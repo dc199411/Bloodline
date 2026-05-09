@@ -40,7 +40,7 @@ export async function getBScoreHistory(agentId: bigint, page = 1, limit = 50) {
   ]);
 
   return {
-    snapshots: snapshots.map((s) => ({
+    snapshots: snapshots.map((s: typeof snapshots[number]) => ({
       composite: Number(s.composite),
       taskScore: Number(s.taskScore),
       profitScore: Number(s.profitScore),
@@ -98,16 +98,17 @@ export async function getLeaderboard(limit = 100) {
     },
   });
 
-  const entries = agents
-    .filter((a) => a.bscoreSnapshots.length > 0)
-    .map((a) => ({
+  const mapped = agents
+    .filter((a: typeof agents[number]) => a.bscoreSnapshots.length > 0)
+    .map((a: typeof agents[number]) => ({
       agentId: a.agentId,
       name: a.name,
       stage: a.stage,
       bScore: Number(a.bscoreSnapshots[0].composite),
       totalEarned: Number(a.totalEarned),
-    }))
-    .sort((a, b) => b.bScore - a.bScore)
+    }));
+  const entries = mapped
+    .sort((a: typeof mapped[number], b: typeof mapped[number]) => b.bScore - a.bScore)
     .slice(0, limit);
 
   return entries;

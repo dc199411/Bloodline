@@ -291,17 +291,16 @@ export async function getLeaderboard(limit: number = 100) {
     take: limit,
   });
 
-  return agents
-    .map((a) => ({
-      agentId: a.agentId,
-      name: a.name,
-      stage: a.stage,
-      bScore: a.bscoreSnapshots[0]
-        ? Number(a.bscoreSnapshots[0].composite)
-        : 0,
-      totalEarned: Number(a.totalEarned),
-    }))
-    .sort((a, b) => b.bScore - a.bScore);
+  const mapped = agents.map((a: typeof agents[number]) => ({
+    agentId: a.agentId,
+    name: a.name,
+    stage: a.stage,
+    bScore: a.bscoreSnapshots[0]
+      ? Number(a.bscoreSnapshots[0].composite)
+      : 0,
+    totalEarned: Number(a.totalEarned),
+  }));
+  return mapped.sort((a, b) => b.bScore - a.bScore);
 }
 
 export async function getDangerAgents() {

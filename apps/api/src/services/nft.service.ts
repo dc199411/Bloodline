@@ -1,4 +1,4 @@
-import { getPublicClient, getWalletClient } from '../lib/viem';
+import { getPublicClient, getWalletClient, chain } from '../lib/viem';
 import { DEATH_NFT_OFFSET } from '@bloodline/shared';
 
 const NFT_CONTRACT_ADDRESS = process.env.NFT_CONTRACT_ADDRESS as `0x${string}` | undefined;
@@ -44,6 +44,7 @@ export async function mintBirthNFT(
   if (!NFT_CONTRACT_ADDRESS) throw new Error('NFT contract address not configured');
 
   const hash = await walletClient.writeContract({
+    chain,
     account: walletClient.account!,
     address: NFT_CONTRACT_ADDRESS,
     abi: BLOODLINE_NFT_ABI,
@@ -62,6 +63,7 @@ export async function mintDeathNFT(to: `0x${string}`, agentId: bigint) {
   const deathTokenId = agentId + BigInt(DEATH_NFT_OFFSET);
 
   const hash = await walletClient.writeContract({
+    chain,
     account: walletClient.account!,
     address: NFT_CONTRACT_ADDRESS,
     abi: BLOODLINE_NFT_ABI,

@@ -1,5 +1,6 @@
 import { Worker } from 'bullmq';
 import { queueConnection, socialQueue } from '../lib/queue';
+import type { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { getIO } from '../lib/ws';
 import type { DeployConfig, ForkConfig, DNA } from '@bloodline/shared';
@@ -92,7 +93,7 @@ export function createDeployWorker(): Worker {
 
         // Step 5: Register onchain (placeholder)
         emitDeployLog('onchain', 'start', 'Registering onchain...');
-        const createdAgent = await prisma.$transaction(async (tx) => {
+        const createdAgent = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
           const nextId = await tx.agent.findFirst({
             orderBy: { agentId: 'desc' },
             select: { agentId: true },
