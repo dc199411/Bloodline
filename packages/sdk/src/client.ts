@@ -35,15 +35,22 @@ export class BloodlineClient {
     const url = `${this.apiUrl}${path.startsWith('/') ? path : `/${path}`}`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...(options.headers as Record<string, string>),
     };
     if (this._token) {
       headers['Authorization'] = `Bearer ${this._token}`;
     }
+    if (options.headers) {
+      const incoming = options.headers instanceof Headers
+        ? Object.fromEntries(options.headers.entries())
+        : Array.isArray(options.headers)
+          ? Object.fromEntries(options.headers)
+          : options.headers as Record<string, string>;
+      Object.assign(headers, incoming);
+    }
 
     const res = await fetch(url, {
       ...options,
-      headers: { ...headers, ...options.headers },
+      headers,
     });
 
     if (!res.ok) {

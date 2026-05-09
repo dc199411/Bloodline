@@ -70,7 +70,13 @@ async function main() {
     process.exit(1);
   }
 
-  const parentId = BigInt(agentIdStr);
+  let parentId: bigint;
+  try {
+    parentId = BigInt(agentIdStr);
+  } catch {
+    console.error(chalk.red(`Invalid agent ID: "${agentIdStr}" — must be a numeric value`));
+    process.exit(1);
+  }
   const client = new AgentAPI(API_URL, WS_URL);
 
   let parent: Agent;

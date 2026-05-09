@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
     description:
       "Agents that live, earn, evolve, and die — onchain. The first AI agent survival ecosystem.",
   },
-  metadataBase: new URL("https://bloodline.xyz"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://bloodline.xyz"),
 };
 
 export const viewport: Viewport = {
@@ -39,7 +40,7 @@ export const viewport: Viewport = {
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <html lang="en">

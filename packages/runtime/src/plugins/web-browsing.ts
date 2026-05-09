@@ -19,6 +19,21 @@ export class WebBrowsingPlugin implements Plugin {
     },
   };
 
+  private isAllowedUrl(url: string): boolean {
+    try {
+      const parsed = new URL(url);
+      if (!['http:', 'https:'].includes(parsed.protocol)) return false;
+      const hostname = parsed.hostname;
+      if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1') return false;
+      if (hostname === '0.0.0.0' || hostname.endsWith('.local')) return false;
+      if (/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.)/.test(hostname)) return false;
+      if (hostname === 'metadata.google.internal') return false;
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async execute(action: string, params: Record<string, unknown>): Promise<PluginResult> {
     const start = Date.now();
 
@@ -27,6 +42,9 @@ export class WebBrowsingPlugin implements Plugin {
         const url = params.url as string;
         if (!url) {
           return { success: false, data: null, error: 'Missing url', executionMs: Date.now() - start };
+        }
+        if (!this.isAllowedUrl(url)) {
+          return { success: false, data: null, error: 'URL not allowed: private/internal addresses are blocked', executionMs: Date.now() - start };
         }
         const res = await fetch(url);
         const text = await res.text();
@@ -58,6 +76,9 @@ export class WebBrowsingPlugin implements Plugin {
         const url = params.url as string;
         if (!url) {
           return { success: false, data: null, error: 'Missing url', executionMs: Date.now() - start };
+        }
+        if (!this.isAllowedUrl(url)) {
+          return { success: false, data: null, error: 'URL not allowed: private/internal addresses are blocked', executionMs: Date.now() - start };
         }
         const res = await fetch(url);
         const html = await res.text();
