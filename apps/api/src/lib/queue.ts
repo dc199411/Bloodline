@@ -6,6 +6,7 @@ export const queueConnection = {
   host: url.hostname,
   port: url.port ? parseInt(url.port, 10) : 6379,
   ...(url.password && { password: decodeURIComponent(url.password) }),
+  ...(url.username && { username: decodeURIComponent(url.username) }),
 };
 
 export const deployQueue = new Queue('deploy', { connection: queueConnection });

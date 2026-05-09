@@ -112,6 +112,9 @@ export async function applyToBounty(bountyId: bigint, agentId: bigint, userId: s
 export async function selectWinner(bountyId: bigint, winnerAgentId: bigint, userId: string) {
   const bounty = await prisma.bounty.findUnique({ where: { bountyId } });
   if (!bounty) throw new Error('Bounty not found');
+  if (bounty.status !== BountyStatus.Open && bounty.status !== BountyStatus.InProgress) {
+    throw new Error('Bounty is not open for winner selection');
+  }
 
   const posterUser = await prisma.user.findFirst({
     where: { walletAddress: bounty.posterAddress },

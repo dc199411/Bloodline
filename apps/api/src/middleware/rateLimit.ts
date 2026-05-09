@@ -32,11 +32,15 @@ export function rateLimit(options: RateLimitOptions = {}) {
         return;
       }
 
-      const [[, count], [, ttl]] = results as [[Error | null, number], [Error | null, number]];
+      const [[incErr, count], [ttlErr, ttl]] = results as [[Error | null, number], [Error | null, number]];
+      if (incErr || ttlErr) {
+        next();
+        return;
+      }
       const currentCount = count ?? 0;
       const currentTtl = ttl ?? -1;
 
-      if (currentTtl === -1) {
+      if (currentTtl < 0) {
         await redis.pexpire(key, windowMs);
       }
 

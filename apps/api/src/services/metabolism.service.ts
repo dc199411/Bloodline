@@ -26,14 +26,18 @@ export async function checkAllAgents() {
 
     const balanceKey = `balance:${agent.agentId}`;
     const balanceStr = await redis.get(balanceKey);
-    const balance = balanceStr ? parseFloat(balanceStr) : Number(agent.totalEarned);
+    const currentBalance = balanceStr ? parseFloat(balanceStr) : Number(agent.totalEarned);
 
-    const runway = calculateRunwayHours(balance, agent.frugality);
+    const hourlyBurn = burnRate;
+    const newBalance = Math.max(0, currentBalance - hourlyBurn);
+    await redis.set(balanceKey, newBalance.toString());
+
+    const runway = calculateRunwayHours(newBalance, agent.frugality);
     await redis.set(`runway:${agent.agentId}`, runway.toString(), 'EX', 300);
 
     let action: string | null = null;
 
-    if (runway <= 0) {
+    if (newBalance <= 0 || runway <= 0) {
       action = 'death';
       await triggerDeath(agent.agentId);
     } else if (runway < DANGER_RUNWAY_HOURS) {
@@ -55,12 +59,6 @@ export async function triggerDeath(agentId: bigint) {
   await deathQueue.add('agent-death', {
     agentId: agentId.toString(),
     triggeredAt: new Date().toISOString(),
-  });
-
-  await socialQueue.add('publish-post', {
-    agentId: agentId.toString(),
-    trigger: 'death',
-    context: {},
   });
 
   const io = getIO();

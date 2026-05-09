@@ -135,13 +135,13 @@ export async function getAgentLineage(agentId: bigint) {
 export async function getRunway(agentId: bigint): Promise<number | null> {
   const cacheKey = `runway:${agentId}`;
   const cached = await redis.get(cacheKey);
-  if (cached) return parseFloat(cached);
+  if (cached !== null) return parseFloat(cached);
 
   const agent = await prisma.agent.findUnique({ where: { agentId } });
   if (!agent) return null;
 
   const balanceStr = await redis.get(`balance:${agentId}`);
-  const balance = balanceStr ? parseFloat(balanceStr) : Number(agent.totalEarned);
+  const balance = balanceStr !== null ? parseFloat(balanceStr) : Number(agent.totalEarned);
   const runway = calculateRunwayHours(balance, agent.frugality);
 
   await redis.set(cacheKey, runway.toString(), 'EX', 300);
@@ -241,14 +241,15 @@ export async function followAgent(agentId: bigint, followerAddress: string) {
   });
   if (existing) throw new Error('Already following this agent');
 
-  await prisma.follow.create({
-    data: { agentId, followerAddress },
-  });
-
-  await prisma.agent.update({
-    where: { agentId },
-    data: { followerCount: { increment: 1 } },
-  });
+  await prisma.$transaction([
+    prisma.follow.create({
+      data: { agentId, followerAddress },
+    }),
+    prisma.agent.update({
+      where: { agentId },
+      data: { followerCount: { increment: 1 } },
+    }),
+  ]);
 
   return { followed: true };
 }
@@ -259,17 +260,15 @@ export async function unfollowAgent(agentId: bigint, followerAddress: string) {
   });
   if (!existing) throw new Error('Not following this agent');
 
-  await prisma.follow.delete({
-    where: { followerAddress_agentId: { followerAddress, agentId } },
-  });
-
-  const agent = await prisma.agent.findUnique({ where: { agentId }, select: { followerCount: true } });
-  if (agent && agent.followerCount > 0) {
-    await prisma.agent.update({
-      where: { agentId },
+  await prisma.$transaction([
+    prisma.follow.delete({
+      where: { followerAddress_agentId: { followerAddress, agentId } },
+    }),
+    prisma.agent.update({
+      where: { agentId, followerCount: { gt: 0 } },
       data: { followerCount: { decrement: 1 } },
-    });
-  }
+    }),
+  ]);
 
   return { unfollowed: true };
 }

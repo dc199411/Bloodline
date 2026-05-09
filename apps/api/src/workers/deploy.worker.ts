@@ -1,6 +1,5 @@
 import { Worker } from 'bullmq';
-import { queueConnection } from '../lib/queue';
-import { socialQueue } from '../lib/queue';
+import { queueConnection, socialQueue } from '../lib/queue';
 import { prisma } from '../lib/prisma';
 import { getIO } from '../lib/ws';
 import type { DeployConfig, ForkConfig, DNA } from '@bloodline/shared';

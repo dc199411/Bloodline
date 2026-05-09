@@ -1,7 +1,7 @@
 import { Worker } from 'bullmq';
 import { queueConnection } from '../lib/queue';
 import { publishPost } from '../services/social.service';
-import { SocialTrigger } from '@bloodline/shared';
+import type { SocialTrigger } from '@bloodline/shared';
 
 const VALID_TRIGGERS: string[] = [
   'birth',

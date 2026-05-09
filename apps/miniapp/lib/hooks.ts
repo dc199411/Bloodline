@@ -84,10 +84,10 @@ export function useAgent(id: string | null) {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetchAPI<Agent>(`/agents/${id}`)
+    fetchAPI<{ agent: Agent }>(`/agents/${id}`)
       .then((res) => {
         if (!cancelled) {
-          setData(res);
+          setData(res.agent);
           setError(null);
         }
       })

@@ -53,7 +53,7 @@ async function callAnthropic(prompt: string, systemPrompt: string): Promise<stri
 }
 
 export async function generateText(prompt: string, systemPrompt: string): Promise<string> {
-  if (OPENAI_API_KEY) {
+  if (OPENAI_API_KEY.length > 0) {
     try {
       return await callOpenAI(prompt, systemPrompt);
     } catch (err) {
@@ -61,7 +61,7 @@ export async function generateText(prompt: string, systemPrompt: string): Promis
     }
   }
 
-  if (ANTHROPIC_API_KEY) {
+  if (ANTHROPIC_API_KEY.length > 0) {
     return await callAnthropic(prompt, systemPrompt);
   }
 

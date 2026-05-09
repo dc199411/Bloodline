@@ -1,6 +1,5 @@
 import { Worker } from 'bullmq';
-import { queueConnection } from '../lib/queue';
-import { metabolismQueue } from '../lib/queue';
+import { queueConnection, metabolismQueue } from '../lib/queue';
 import { checkAllAgents } from '../services/metabolism.service';
 
 const METABOLISM_CRON = '0 * * * *'; // Every hour at minute 0
