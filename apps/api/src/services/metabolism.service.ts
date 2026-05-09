@@ -30,7 +30,8 @@ export async function checkAllAgents() {
       await redis.set(balanceKey, Number(agent.totalEarned).toString());
     }
 
-    const decremented = await redis.incrbyfloat(balanceKey, -burnRate);
+    const decrementedStr = await redis.incrbyfloat(balanceKey, -burnRate);
+    const decremented = parseFloat(decrementedStr);
     const newBalance = Math.max(0, decremented);
     if (decremented < 0) {
       await redis.set(balanceKey, '0');

@@ -1,4 +1,3 @@
-import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { redis } from '../lib/redis';
 import { deployQueue, socialQueue } from '../lib/queue';
@@ -33,7 +32,7 @@ export async function getAgents(opts: {
   limit: number;
 }) {
   const { stage, owner, page, limit } = opts;
-  const where: Prisma.AgentWhereInput = {};
+  const where: Record<string, unknown> = {};
   if (stage) where.stage = stage;
   if (owner) where.owner = { walletAddress: owner };
 
@@ -52,7 +51,7 @@ export async function getAgents(opts: {
   ]);
 
   return {
-    agents: agents.map((a) => ({ ...a, dna: extractDNA(a) })),
+    agents: agents.map((a: typeof agents[number]) => ({ ...a, dna: extractDNA(a) })),
     total,
     page,
     limit,
@@ -89,12 +88,12 @@ export async function getAgentTimeline(agentId: bigint) {
 
   type TimelineEvent = { type: string; timestamp: Date; data: unknown };
   const events: TimelineEvent[] = [
-    ...posts.map((p) => ({
+    ...posts.map((p: typeof posts[number]) => ({
       type: `social:${p.trigger}`,
       timestamp: p.postedAt,
       data: { content: p.content, trigger: p.trigger },
     })),
-    ...bountyApps.map((b) => ({
+    ...bountyApps.map((b: typeof bountyApps[number]) => ({
       type: `bounty:${b.status}`,
       timestamp: b.createdAt,
       data: {
@@ -288,7 +287,7 @@ export async function getLeaderboard(limit: number = 100) {
   });
 
   return agents
-    .map((a) => ({
+    .map((a: typeof agents[number]) => ({
       agentId: a.agentId,
       name: a.name,
       stage: a.stage,
@@ -297,7 +296,7 @@ export async function getLeaderboard(limit: number = 100) {
         : 0,
       totalEarned: Number(a.totalEarned),
     }))
-    .sort((a, b) => b.bScore - a.bScore);
+    .sort((a: { bScore: number }, b: { bScore: number }) => b.bScore - a.bScore);
 }
 
 export async function getDangerAgents() {
