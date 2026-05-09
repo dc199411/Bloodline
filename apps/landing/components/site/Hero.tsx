@@ -55,8 +55,8 @@ export function Hero() {
           animate="show"
           className="mb-8 sm:mb-10 flex items-center gap-4"
         >
-          <Logo size={64} className="sm:hidden" />
-          <Logo size={88} className="hidden sm:inline-flex" />
+          <Logo size={72} priority className="sm:hidden" />
+          <Logo size={104} priority className="hidden sm:inline-flex" />
         </motion.div>
 
         {/* Eyebrow */}
