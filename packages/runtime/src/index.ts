@@ -1,6 +1,5 @@
 import express from 'express';
-import type { TaskRequest } from '@bloodline/shared';
-import type { DNA } from '@bloodline/shared';
+import type { TaskRequest, DNA } from '@bloodline/shared';
 import { AgentCore } from './agent-core';
 import { PluginManager } from './plugins';
 

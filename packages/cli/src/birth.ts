@@ -5,6 +5,7 @@ import {
   AgentAPI,
   REGISTRATION_FEE_ETH,
   AGENT_TEMPLATES,
+  calculateBurnRate,
   type DNA,
 } from '@bloodline/sdk';
 
@@ -62,12 +63,6 @@ function renderDNAPreview(dna: DNA): string {
     lines.push(`  ${label.padEnd(14)} ${bar}  ${String(value).padStart(3)}  ${rarity}`);
   }
   return lines.join('\n');
-}
-
-function calculateBurnRate(frugality: number): number {
-  const baseMicro = 10000;
-  const rate = baseMicro * (256 - frugality) / 128;
-  return Math.max(rate / 1_000_000, 0.001);
 }
 
 async function main() {
