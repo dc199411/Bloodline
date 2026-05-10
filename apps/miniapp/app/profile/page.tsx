@@ -10,6 +10,7 @@ export default function ProfilePage() {
   const mockAddress = "0x7a3f...e2c1";
 
   const handleCopy = () => {
+    navigator.clipboard.writeText(mockAddress).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };

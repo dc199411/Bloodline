@@ -1,7 +1,7 @@
 "use client";
 
 import { Heart } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface SaveButtonProps {
   agentId: string;
@@ -10,11 +10,18 @@ interface SaveButtonProps {
 
 export function SaveButton({ agentName }: SaveButtonProps) {
   const [saving, setSaving] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleSave = () => {
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
+
+  const handleSave = useCallback(() => {
     setSaving(true);
-    setTimeout(() => setSaving(false), 2000);
-  };
+    timerRef.current = setTimeout(() => setSaving(false), 2000);
+  }, []);
 
   return (
     <button

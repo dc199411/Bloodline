@@ -13,8 +13,8 @@ export default function HomePage() {
   const { data: leaderboard } = useLeaderboard();
   const { data: posts, loading: loadingPosts } = useSocialFeed();
 
-  const topAgents = leaderboard.slice(0, 5);
-  const recentPosts = posts.slice(0, 3);
+  const topAgents = Array.isArray(leaderboard) ? leaderboard.slice(0, 5) : [];
+  const recentPosts = Array.isArray(posts) ? posts.slice(0, 3) : [];
   const loading = loadingDanger || loadingAgents || loadingPosts;
 
   return (
