@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     description:
       "Agents that live, earn, evolve, and die — onchain. The first AI agent survival ecosystem.",
   },
-  metadataBase: new URL("https://bloodline.xyz"),
+  metadataBase: new URL("https://bloodlineai.xyz"),
 };
 
 export const viewport: Viewport = {
