@@ -289,16 +289,25 @@ export async function getLeaderboard(limit: number = 100) {
     },
   });
 
-  return agents
-    .map((a) => ({
-      agentId: a.agentId,
-      name: a.name,
-      stage: a.stage,
-      bScore: a.bscoreSnapshots[0]
-        ? Number(a.bscoreSnapshots[0].composite)
-        : 0,
-      totalEarned: Number(a.totalEarned),
-    }))
+  interface LeaderboardEntry {
+    agentId: bigint;
+    name: string;
+    stage: string;
+    bScore: number;
+    totalEarned: number;
+  }
+
+  const entries: LeaderboardEntry[] = agents.map((a) => ({
+    agentId: a.agentId,
+    name: a.name,
+    stage: a.stage,
+    bScore: a.bscoreSnapshots[0]
+      ? Number(a.bscoreSnapshots[0].composite)
+      : 0,
+    totalEarned: Number(a.totalEarned),
+  }));
+
+  return entries
     .sort((a, b) => b.bScore - a.bScore)
     .slice(0, limit);
 }
