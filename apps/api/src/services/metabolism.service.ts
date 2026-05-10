@@ -26,11 +26,15 @@ export async function checkAllAgents() {
 
     const balanceKey = `balance:${agent.agentId}`;
     const balanceStr = await redis.get(balanceKey);
-    const currentBalance = balanceStr ? parseFloat(balanceStr) : Number(agent.totalEarned);
+    if (balanceStr === null) {
+      await redis.set(balanceKey, Number(agent.totalEarned).toString());
+    }
 
-    const hourlyBurn = burnRate;
-    const newBalance = Math.max(0, currentBalance - hourlyBurn);
-    await redis.set(balanceKey, newBalance.toString());
+    const afterBurn = await redis.incrbyfloat(balanceKey, -burnRate);
+    const newBalance = Math.max(0, parseFloat(String(afterBurn)));
+    if (newBalance === 0 && parseFloat(String(afterBurn)) < 0) {
+      await redis.set(balanceKey, '0');
+    }
 
     const runway = calculateRunwayHours(newBalance, agent.frugality);
     await redis.set(`runway:${agent.agentId}`, runway.toString(), 'EX', 300);
@@ -56,6 +60,10 @@ export function calculateAgentBurnRate(frugality: number): number {
 }
 
 export async function triggerDeath(agentId: bigint) {
+  const dedupKey = `death-pending:${agentId}`;
+  const alreadyPending = await redis.set(dedupKey, '1', 'EX', 3600, 'NX');
+  if (!alreadyPending) return;
+
   await deathQueue.add('agent-death', {
     agentId: agentId.toString(),
     triggeredAt: new Date().toISOString(),
@@ -68,6 +76,10 @@ export async function triggerDeath(agentId: bigint) {
 }
 
 export async function triggerDanger(agentId: bigint, runway: number) {
+  const dedupKey = `danger-notified:${agentId}`;
+  const alreadyNotified = await redis.set(dedupKey, '1', 'EX', 3600, 'NX');
+  if (!alreadyNotified) return;
+
   await socialQueue.add('publish-post', {
     agentId: agentId.toString(),
     trigger: 'near_death',

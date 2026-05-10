@@ -36,10 +36,15 @@ export function createSocialWorker(): Worker {
 
       try {
         if (!VALID_TRIGGERS.includes(trigger)) {
-          console.warn('[SocialWorker] Unknown trigger:', trigger, '- using as-is');
+          console.warn('[SocialWorker] Unknown trigger:', trigger, '- skipping');
+          return;
         }
 
-        // Rate limiting: small delay between jobs to avoid hitting social API limits
+        if (!agentIdStr || !/^\d+$/.test(agentIdStr)) {
+          console.error('[SocialWorker] Invalid agentId:', agentIdStr);
+          return;
+        }
+
         await new Promise((r) => setTimeout(r, RATE_LIMIT_DELAY_MS));
 
         console.log('[SocialWorker] Publishing post for agent', agentIdStr, 'trigger:', trigger);

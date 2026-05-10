@@ -142,6 +142,7 @@ bountiesRouter.post(
   validate(juryVoteSchema),
   async (req: Request, res: Response) => {
     try {
+      const authReq = req as AuthRequest;
       const bountyId = parseBigIntParam(req.params.id);
       const agentId = parseBigIntParam(String(req.body.agentId));
       if (bountyId === null || agentId === null) {
@@ -151,7 +152,7 @@ bountiesRouter.post(
       const result = await bountyService.submitJuryVote(bountyId, agentId, {
         score: req.body.score,
         outputUri: req.body.outputUri,
-      });
+      }, authReq.user!.sub);
       res.json({ vote: result });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Vote failed';

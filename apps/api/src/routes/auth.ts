@@ -11,9 +11,23 @@ import type { JWTPayload } from '../types';
 export const authRouter: Router = Router();
 
 const JWT_SECRET = process.env.JWT_SECRET!;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET ?? JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN ?? '24h';
 const REFRESH_EXPIRES_IN = process.env.REFRESH_EXPIRES_IN ?? '7d';
 const NONCE_TTL_SECONDS = 300;
+
+function parseRefreshTTL(expiresIn: string): number {
+  const match = expiresIn.match(/^(\d+)([smhd])$/);
+  if (!match) return 7 * 24 * 60 * 60;
+  const value = parseInt(match[1], 10);
+  switch (match[2]) {
+    case 's': return value;
+    case 'm': return value * 60;
+    case 'h': return value * 3600;
+    case 'd': return value * 86400;
+    default: return 7 * 86400;
+  }
+}
 
 const nonceSchema = z.object({
   address: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
@@ -29,11 +43,17 @@ const refreshSchema = z.object({
 });
 
 function signAccessToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'] });
+  return jwt.sign({ ...payload, typ: 'access' }, JWT_SECRET, {
+    algorithm: 'HS256',
+    expiresIn: JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'],
+  });
 }
 
 function signRefreshToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: REFRESH_EXPIRES_IN as jwt.SignOptions['expiresIn'] });
+  return jwt.sign({ ...payload, typ: 'refresh' }, JWT_REFRESH_SECRET, {
+    algorithm: 'HS256',
+    expiresIn: REFRESH_EXPIRES_IN as jwt.SignOptions['expiresIn'],
+  });
 }
 
 authRouter.post('/nonce', validate(nonceSchema), async (req: Request, res: Response) => {
@@ -84,11 +104,12 @@ authRouter.post('/verify', validate(verifySchema), async (req: Request, res: Res
     const accessToken = signAccessToken(payload);
     const refreshToken = signRefreshToken(payload);
 
+    const refreshTTL = parseRefreshTTL(REFRESH_EXPIRES_IN);
     await redis.set(
       `refresh:${user.id}`,
       refreshToken,
       'EX',
-      7 * 24 * 60 * 60,
+      refreshTTL,
     );
 
     res.json({
@@ -110,9 +131,15 @@ authRouter.post('/refresh', validate(refreshSchema), async (req: Request, res: R
   try {
     const { refreshToken } = req.body as z.infer<typeof refreshSchema>;
 
-    let decoded: JWTPayload;
+    let decoded: JWTPayload & { typ?: string };
     try {
-      decoded = jwt.verify(refreshToken, JWT_SECRET) as JWTPayload;
+      decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET, {
+        algorithms: ['HS256'],
+      }) as JWTPayload & { typ?: string };
+      if (decoded.typ !== 'refresh') {
+        res.status(401).json({ error: 'Invalid token type' });
+        return;
+      }
     } catch {
       res.status(401).json({ error: 'Invalid or expired refresh token' });
       return;
@@ -128,11 +155,12 @@ authRouter.post('/refresh', validate(refreshSchema), async (req: Request, res: R
     const newAccessToken = signAccessToken(payload);
     const newRefreshToken = signRefreshToken(payload);
 
+    const refreshTTL = parseRefreshTTL(REFRESH_EXPIRES_IN);
     await redis.set(
       `refresh:${decoded.sub}`,
       newRefreshToken,
       'EX',
-      7 * 24 * 60 * 60,
+      refreshTTL,
     );
 
     res.json({ accessToken: newAccessToken, refreshToken: newRefreshToken });

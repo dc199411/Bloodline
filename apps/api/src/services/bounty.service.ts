@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { BountyStatus } from '@bloodline/shared';
 
@@ -7,22 +8,24 @@ export async function getBounties(opts: {
   page: number;
   limit: number;
 }) {
-  const { type, minPrize, page, limit } = opts;
-  const where: Record<string, unknown> = { status: BountyStatus.Open };
+  const safePage = Math.max(1, page);
+  const safeLimit = Math.max(1, Math.min(100, limit));
+  const { type, minPrize } = opts;
+  const where: Prisma.BountyWhereInput = { status: BountyStatus.Open };
   if (type) where.bountyType = type;
-  if (minPrize !== undefined) where.prizeAmount = { gte: minPrize };
+  if (minPrize !== undefined && Number.isFinite(minPrize)) where.prizeAmount = { gte: minPrize };
 
   const [bounties, total] = await Promise.all([
     prisma.bounty.findMany({
       where,
       orderBy: { createdAt: 'desc' },
-      skip: (page - 1) * limit,
-      take: limit,
+      skip: (safePage - 1) * safeLimit,
+      take: safeLimit,
     }),
     prisma.bounty.count({ where }),
   ]);
 
-  return { bounties, total, page, limit, pages: Math.ceil(total / limit) };
+  return { bounties, total, page: safePage, limit: safeLimit, pages: Math.ceil(total / safeLimit) || 1 };
 }
 
 export async function getBounty(bountyId: bigint) {
@@ -83,6 +86,7 @@ export async function applyToBounty(bountyId: bigint, agentId: bigint, userId: s
   const bounty = await prisma.bounty.findUnique({ where: { bountyId } });
   if (!bounty) throw new Error('Bounty not found');
   if (bounty.status !== BountyStatus.Open) throw new Error('Bounty is not open');
+  if (bounty.deadline && new Date(bounty.deadline) < new Date()) throw new Error('Bounty deadline has passed');
 
   const agent = await prisma.agent.findUnique({
     where: { agentId },
@@ -102,11 +106,17 @@ export async function applyToBounty(bountyId: bigint, agentId: bigint, userId: s
   if (agent.creativity < bounty.minCreativity) throw new Error('Agent creativity below minimum');
   if (agent.speed < bounty.minSpeed) throw new Error('Agent speed below minimum');
 
-  const application = await prisma.bountyApplication.create({
-    data: { bountyId, agentId },
-  });
-
-  return application;
+  try {
+    const application = await prisma.bountyApplication.create({
+      data: { bountyId, agentId },
+    });
+    return application;
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+      throw new Error('Agent has already applied to this bounty');
+    }
+    throw err;
+  }
 }
 
 export async function selectWinner(bountyId: bigint, winnerAgentId: bigint, userId: string) {
@@ -157,11 +167,19 @@ export async function submitJuryVote(
   bountyId: bigint,
   agentId: bigint,
   vote: { score: number; outputUri?: string },
+  userId: string,
 ) {
   const bounty = await prisma.bounty.findUnique({ where: { bountyId } });
   if (!bounty) throw new Error('Bounty not found');
   if (bounty.verifyMode !== 'agent_jury') {
     throw new Error('Bounty does not use jury verification');
+  }
+
+  const posterUser = await prisma.user.findFirst({
+    where: { walletAddress: bounty.posterAddress },
+  });
+  if (!posterUser || posterUser.id !== userId) {
+    throw new Error('Only the bounty poster can submit jury votes');
   }
 
   const application = await prisma.bountyApplication.findFirst({

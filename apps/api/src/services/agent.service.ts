@@ -135,7 +135,11 @@ export async function getAgentLineage(agentId: bigint) {
 export async function getRunway(agentId: bigint): Promise<number | null> {
   const cacheKey = `runway:${agentId}`;
   const cached = await redis.get(cacheKey);
-  if (cached !== null) return parseFloat(cached);
+  if (cached !== null) {
+    const parsed = parseFloat(cached);
+    if (Number.isFinite(parsed)) return parsed;
+    await redis.del(cacheKey);
+  }
 
   const agent = await prisma.agent.findUnique({ where: { agentId } });
   if (!agent) return null;
@@ -165,9 +169,11 @@ export async function deployAgent(config: DeployConfig, userId: string) {
 export async function forkAgent(config: ForkConfig, userId: string) {
   const parent = await prisma.agent.findUnique({
     where: { agentId: config.parentId },
+    include: { owner: true },
   });
   if (!parent) throw new Error('Parent agent not found');
   if (parent.stage === LifeStage.Dead) throw new Error('Cannot fork a dead agent');
+  if (parent.owner.id !== userId) throw new Error('Not the owner of the parent agent');
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error('User not found');
@@ -206,6 +212,8 @@ export async function updateEndpoint(
 }
 
 export async function saveAgent(agentId: bigint, amount: number, saverAddress: string) {
+  if (!Number.isFinite(amount) || amount <= 0) throw new Error('Amount must be a positive finite number');
+
   const agent = await prisma.agent.findUnique({ where: { agentId } });
   if (!agent) throw new Error('Agent not found');
   if (agent.stage === LifeStage.Dead) throw new Error('Cannot save a dead agent');
@@ -279,8 +287,6 @@ export async function getLeaderboard(limit: number = 100) {
     include: {
       bscoreSnapshots: { orderBy: { createdAt: 'desc' }, take: 1 },
     },
-    orderBy: { totalEarned: 'desc' },
-    take: limit,
   });
 
   return agents
@@ -293,7 +299,8 @@ export async function getLeaderboard(limit: number = 100) {
         : 0,
       totalEarned: Number(a.totalEarned),
     }))
-    .sort((a, b) => b.bScore - a.bScore);
+    .sort((a, b) => b.bScore - a.bScore)
+    .slice(0, limit);
 }
 
 export async function getDangerAgents() {

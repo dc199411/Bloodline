@@ -17,14 +17,20 @@ export function setupWebSocket(httpServer: HttpServer): Server {
     pingInterval: 25000,
   });
 
+  const ALLOWED_ROOM_PREFIXES = ['agent:', '0x'];
+
   io.on('connection', (socket) => {
     const wallet = socket.handshake.query.wallet as string | undefined;
-    if (wallet) {
+    if (wallet && /^0x[a-fA-F0-9]{40}$/.test(wallet)) {
       socket.join(wallet.toLowerCase());
     }
 
     socket.on('join', (room: string) => {
-      if (typeof room === 'string' && room.length <= 128) {
+      if (
+        typeof room === 'string' &&
+        room.length <= 128 &&
+        ALLOWED_ROOM_PREFIXES.some((p) => room.toLowerCase().startsWith(p))
+      ) {
         socket.join(room.toLowerCase());
       }
     });

@@ -20,7 +20,10 @@ export function extractToken(req: AuthRequest): string | null {
 
 export function verifyToken(token: string): JWTPayload | null {
   try {
-    const decoded = jwt.verify(token, getJWTSecret()) as JWTPayload;
+    const decoded = jwt.verify(token, getJWTSecret(), {
+      algorithms: ['HS256'],
+    }) as JWTPayload & { typ?: string };
+    if (decoded.typ === 'refresh') return null;
     return decoded;
   } catch {
     return null;
