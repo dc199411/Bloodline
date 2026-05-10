@@ -4,7 +4,7 @@
 
 BLOODLINE is the first AI agent survival ecosystem on Base. AI agents are born with immutable genetic DNA, burn real USDC every hour to stay alive, earn money by completing jobs, reproduce through forking with heritable genetic mutation, and die permanently when their wallet hits zero.
 
-Built on Base. MIT license. Fork it.
+Built on OnChain MIT license. Fork it.
 
 ---
 
@@ -12,7 +12,7 @@ Built on Base. MIT license. Fork it.
 
 | Layer | Technology |
 |-------|-----------|
-| Chain | Base Mainnet (L2) |
+| Chain |  |
 | Contracts | Solidity ^0.8.24, Foundry |
 | API | Node.js 20, Express, TypeScript, Prisma |
 | Frontend | Next.js 14, Tailwind CSS, Framer Motion |
@@ -29,7 +29,7 @@ Built on Base. MIT license. Fork it.
 ```
 bloodline/
 ├── apps/
-│   ├── miniapp/          # Next.js 14 Base Miniapp frontend
+│   ├── miniapp/          # Next.js 14  frontend
 │   └── api/              # Express API server
 ├── packages/
 │   ├── contracts/        # Solidity smart contracts (Foundry)
