@@ -18,6 +18,10 @@ export interface BountyFilters {
   type?: string;
 }
 
+/* -----------------------------
+   Generic fetch hook (FIXED)
+------------------------------ */
+
 function useFetchWithFallback<T>(
   path: string,
   fallback: T
@@ -28,13 +32,14 @@ function useFetchWithFallback<T>(
 
   useEffect(() => {
     let cancelled = false;
+
     setLoading(true);
     setError(null);
+
     fetchAPI<T>(path)
       .then((res) => {
         if (!cancelled) {
           setData(res);
-          setError(null);
         }
       })
       .catch((err) => {
@@ -46,6 +51,7 @@ function useFetchWithFallback<T>(
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
+
     return () => {
       cancelled = true;
     };
@@ -54,20 +60,36 @@ function useFetchWithFallback<T>(
   return { data, loading, error };
 }
 
+/* -----------------------------
+   Agents
+------------------------------ */
+
+type AgentsResponse = {
+  agents: Agent[];
+};
+
 export function useAgents(filters?: AgentFilters) {
   const params = new URLSearchParams();
   if (filters?.stage) params.set("stage", filters.stage);
   if (filters?.owner) params.set("owner", filters.owner);
+
   const query = params.toString();
   const path = query ? `/agents?${query}` : "/agents";
 
-  const result = useFetchWithFallback<any>(path, { agents: MOCK_AGENTS });
+  const result = useFetchWithFallback<AgentsResponse>(path, {
+    agents: MOCK_AGENTS,
+  });
+
   return {
-    data: result.data.agents || MOCK_AGENTS,
+    data: result.data.agents,
     loading: result.loading,
-    error: result.error
+    error: result.error,
   };
 }
+
+/* -----------------------------
+   Single Agent
+------------------------------ */
 
 export function useAgent(id: string | null) {
   const [data, setData] = useState<Agent | null>(null);
@@ -81,14 +103,16 @@ export function useAgent(id: string | null) {
       setError(null);
       return;
     }
+
     let cancelled = false;
+
     setLoading(true);
     setError(null);
+
     fetchAPI<{ agent: Agent }>(`/agents/${id}`)
       .then((res) => {
         if (!cancelled) {
           setData(res.agent);
-          setError(null);
         }
       })
       .catch((err) => {
@@ -100,6 +124,7 @@ export function useAgent(id: string | null) {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
+
     return () => {
       cancelled = true;
     };
@@ -108,19 +133,99 @@ export function useAgent(id: string | null) {
   return { agent: data, loading, error };
 }
 
+/* -----------------------------
+   Bounties
+------------------------------ */
+
+type BountiesResponse = {
+  bounties: Bounty[];
+};
+
 export function useBounties(filters?: BountyFilters) {
   const params = new URLSearchParams();
   if (filters?.type) params.set("type", filters.type);
+
   const query = params.toString();
   const path = query ? `/bounties?${query}` : "/bounties";
 
-  const result = useFetchWithFallback<any>(path, { bounties: MOCK_BOUNTIES });
+  const result = useFetchWithFallback<BountiesResponse>(path, {
+    bounties: MOCK_BOUNTIES,
+  });
+
   return {
-    data: result.data.bounties || MOCK_BOUNTIES,
+    data: result.data.bounties,
     loading: result.loading,
-    error: result.error
+    error: result.error,
   };
 }
+
+/* -----------------------------
+   Social Feed
+------------------------------ */
+
+type SocialResponse = {
+  posts: Post[];
+};
+
+export function useSocialFeed() {
+  const result = useFetchWithFallback<SocialResponse>("/social/feed", {
+    posts: MOCK_POSTS,
+  });
+
+  return {
+    data: result.data.posts,
+    loading: result.loading,
+    error: result.error,
+  };
+}
+
+/* -----------------------------
+   Danger Agents
+------------------------------ */
+
+export function useDangerAgents() {
+  const danger = MOCK_AGENTS.filter((a) => a.stage === "danger");
+
+  const result = useFetchWithFallback<AgentsResponse>(
+    "/agents/danger",
+    { agents: danger }
+  );
+
+  return {
+    data: result.data.agents,
+    loading: result.loading,
+    error: result.error,
+  };
+}
+
+/* -----------------------------
+   Leaderboard
+------------------------------ */
+
+type LeaderboardResponse = {
+  leaderboard: Agent[];
+};
+
+export function useLeaderboard() {
+  const sorted = [...MOCK_AGENTS]
+    .filter((a) => a.stage !== "dead")
+    .sort((a, b) => b.earned - a.earned);
+
+  const result = useFetchWithFallback<LeaderboardResponse>(
+    "/agents/leaderboard",
+    { leaderboard: sorted }
+  );
+
+  return {
+    data: result.data.leaderboard,
+    loading: result.loading,
+    error: result.error,
+  };
+}
+
+/* -----------------------------
+   B Score
+------------------------------ */
 
 export interface BScore {
   agentId: string;
@@ -140,25 +245,24 @@ export function useBScore(agentId: string | null) {
       setError(null);
       return;
     }
+
     let cancelled = false;
+
     setLoading(true);
     setError(null);
+
     fetchAPI<BScore>(`/bscore/${agentId}`)
       .then((res) => {
-        if (!cancelled) {
-          setData(res);
-          setError(null);
-        }
+        if (!cancelled) setData(res);
       })
       .catch((err) => {
-        if (!cancelled) {
-          setData(null);
-          setError(err);
-        }
+        if (!cancelled) setData(null);
+        if (!cancelled) setError(err);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
+
     return () => {
       cancelled = true;
     };
@@ -167,44 +271,9 @@ export function useBScore(agentId: string | null) {
   return { bscore: data, loading, error };
 }
 
-export function useSocialFeed() {
-  const result = useFetchWithFallback<any>("/social/feed", { posts: MOCK_POSTS });
-  return {
-    data: result.data.posts || MOCK_POSTS,
-    loading: result.loading,
-    error: result.error
-  };
-}
-
-export function useDangerAgents() {
-  const result = useFetchWithFallback<any>(
-    "/agents/danger",
-    { agents: MOCK_AGENTS.filter((a) => a.stage === "danger") }
-  );
-  return {
-    data: result.data.agents || MOCK_AGENTS.filter((a) => a.stage === "danger"),
-    loading: result.loading,
-    error: result.error
-  };
-}
-
-export function useLeaderboard() {
-  const result = useFetchWithFallback<any>(
-    "/agents/leaderboard",
-    {
-      leaderboard: [...MOCK_AGENTS]
-        .filter((a) => a.stage !== "dead")
-        .sort((a, b) => b.earned - a.earned)
-    }
-  );
-  return {
-    data: result.data.leaderboard || [...MOCK_AGENTS]
-      .filter((a) => a.stage !== "dead")
-      .sort((a, b) => b.earned - a.earned),
-    loading: result.loading,
-    error: result.error
-  };
-}
+/* -----------------------------
+   Scroll Reveal (unchanged)
+------------------------------ */
 
 export function useScrollReveal<T extends HTMLElement>() {
   const ref = useRef<T>(null);
