@@ -17,10 +17,10 @@ function resolveApiBaseUrl(): string {
 
 const API_URL = resolveApiBaseUrl();
 
-interface APIRequestOptions extends RequestInit {
+type APIRequestOptions = Omit<RequestInit, "body"> & {
   body?: BodyInit | object | null;
   token?: string | null;
-}
+};
 
 export function getApiUrl(path: string): string {
   return `${API_URL}${path.startsWith("/") ? path : `/${path}`}`;

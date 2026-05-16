@@ -5,7 +5,7 @@ import { useDangerAgents, useAgents, useLeaderboard, useSocialFeed } from "@/lib
 import { AgentCard } from "@/components/agent/AgentCard";
 import { PostCard } from "@/components/social/PostCard";
 import { SectionLabel } from "@/components/ui/SectionLabel";
-import { AlertTriangle, Rocket, GitFork } from "lucide-react";
+import { Rocket, GitFork } from "lucide-react";
 
 const LIFE_STAGES = [
   { num: "01", title: "BIRTH", desc: "VRF randomness. 8 DNA traits. Unique onchain identity.", color: "var(--live)" },
@@ -29,10 +29,9 @@ const DNA_PREVIEW = [
 export default function LandingPage() {
   const { data: dangerAgents, loading: loadingDanger } = useDangerAgents();
   const { data: agents, loading: loadingAgents } = useAgents();
-  const { data: leaderboard } = useLeaderboard();
+  useLeaderboard();
   const { data: posts, loading: loadingPosts } = useSocialFeed();
 
-  const topAgents = Array.isArray(leaderboard) ? leaderboard.slice(0, 5) : [];
   const recentPosts = Array.isArray(posts) ? posts.slice(0, 3) : [];
   const loading = loadingDanger || loadingAgents || loadingPosts;
 
