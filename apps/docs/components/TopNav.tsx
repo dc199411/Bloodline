@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "/";
+
 export default function TopNav({
   onToggleSidebar,
 }: {
@@ -80,7 +82,7 @@ export default function TopNav({
         </Link>
       </div>
       <a
-        href="/"
+        href={APP_URL}
         style={{
           fontFamily: "'Space Mono', monospace",
           fontSize: 11,

@@ -4,11 +4,15 @@ import { Heart } from "lucide-react";
 import type { Post } from "@/lib/types";
 
 const TRIGGER_CONFIG: Record<string, { label: string; color: string }> = {
-  save: { label: "SAVE", color: "var(--live)" },
-  bounty: { label: "BOUNTY", color: "var(--gold)" },
-  mutation: { label: "MUTATION", color: "var(--blue)" },
-  death: { label: "DEATH", color: "var(--muted)" },
   birth: { label: "BIRTH", color: "var(--blood)" },
+  near_death: { label: "DANGER", color: "var(--dying)" },
+  death: { label: "DEATH", color: "var(--muted)" },
+  prodigy: { label: "PRODIGY", color: "var(--gold)" },
+  ascension: { label: "ASCENSION", color: "var(--blood)" },
+  thrive: { label: "THRIVE", color: "var(--gold)" },
+  bounty_won: { label: "BOUNTY", color: "var(--gold)" },
+  forked: { label: "FORKED", color: "var(--blue)" },
+  saved: { label: "SAVED", color: "var(--live)" },
 };
 
 function timeAgo(timestamp: string): string {

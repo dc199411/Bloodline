@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { fetchAPI } from "./api";
-import {
-  MOCK_AGENTS,
-  MOCK_BOUNTIES,
-  MOCK_POSTS,
-} from "./mock";
-import type { Agent, Bounty, Post } from "./types";
+import { fetchAPI, getStoredProfile } from "./api";
+import type {
+  Agent,
+  Bounty,
+  BScore,
+  Post,
+  UserProfileSnapshot,
+} from "./types";
 
 export interface AgentFilters {
   stage?: string;
@@ -18,38 +19,67 @@ export interface BountyFilters {
   type?: string;
 }
 
-/* -----------------------------
-   Generic fetch hook (FIXED)
------------------------------- */
+type FetchState<T> = {
+  data: T;
+  loading: boolean;
+  error: Error | null;
+};
 
-function useFetchWithFallback<T>(
-  path: string,
-  fallback: T
-): { data: T; loading: boolean; error: Error | null } {
-  const [data, setData] = useState<T>(fallback);
-  const [loading, setLoading] = useState(true);
+type AgentsResponse = {
+  agents?: Agent[];
+};
+
+type AgentResponse = {
+  agent?: Agent;
+};
+
+type BountiesResponse = {
+  bounties?: Bounty[];
+};
+
+type SocialResponse = {
+  posts?: Post[];
+};
+
+type LeaderboardResponse = {
+  leaderboard?: Agent[];
+};
+
+function useFetch<T>(path: string | null, initialData: T): FetchState<T> {
+  const [data, setData] = useState<T>(initialData);
+  const [loading, setLoading] = useState(Boolean(path));
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    if (!path) {
+      setData(initialData);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     let cancelled = false;
 
+    setData(initialData);
     setLoading(true);
     setError(null);
 
     fetchAPI<T>(path)
-      .then((res) => {
+      .then((response) => {
         if (!cancelled) {
-          setData(res);
+          setData(response);
         }
       })
       .catch((err) => {
         if (!cancelled) {
-          setData(fallback);
-          setError(err);
+          setError(err instanceof Error ? err : new Error("Request failed"));
+          setData(initialData);
         }
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       });
 
     return () => {
@@ -60,14 +90,6 @@ function useFetchWithFallback<T>(
   return { data, loading, error };
 }
 
-/* -----------------------------
-   Agents
------------------------------- */
-
-type AgentsResponse = {
-  agents: Agent[];
-};
-
 export function useAgents(filters?: AgentFilters) {
   const params = new URLSearchParams();
   if (filters?.stage) params.set("stage", filters.stage);
@@ -75,71 +97,24 @@ export function useAgents(filters?: AgentFilters) {
 
   const query = params.toString();
   const path = query ? `/agents?${query}` : "/agents";
-
-  const result = useFetchWithFallback<AgentsResponse>(path, {
-    agents: MOCK_AGENTS,
-  });
+  const result = useFetch<AgentsResponse>(path, { agents: [] });
 
   return {
-    data: result.data.agents,
+    data: result.data.agents ?? [],
     loading: result.loading,
     error: result.error,
   };
 }
 
-/* -----------------------------
-   Single Agent
------------------------------- */
-
 export function useAgent(id: string | null) {
-  const [data, setData] = useState<Agent | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const result = useFetch<AgentResponse>(id ? `/agents/${id}` : null, { agent: undefined });
 
-  useEffect(() => {
-    if (!id) {
-      setData(null);
-      setLoading(false);
-      setError(null);
-      return;
-    }
-
-    let cancelled = false;
-
-    setLoading(true);
-    setError(null);
-
-    fetchAPI<{ agent: Agent }>(`/agents/${id}`)
-      .then((res) => {
-        if (!cancelled) {
-          setData(res.agent);
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setData(MOCK_AGENTS.find((a) => a.id === id) ?? null);
-          setError(err);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [id]);
-
-  return { agent: data, loading, error };
+  return {
+    agent: result.data.agent ?? null,
+    loading: result.loading,
+    error: result.error,
+  };
 }
-
-/* -----------------------------
-   Bounties
------------------------------- */
-
-type BountiesResponse = {
-  bounties: Bounty[];
-};
 
 export function useBounties(filters?: BountyFilters) {
   const params = new URLSearchParams();
@@ -147,95 +122,48 @@ export function useBounties(filters?: BountyFilters) {
 
   const query = params.toString();
   const path = query ? `/bounties?${query}` : "/bounties";
-
-  const result = useFetchWithFallback<BountiesResponse>(path, {
-    bounties: MOCK_BOUNTIES,
-  });
+  const result = useFetch<BountiesResponse>(path, { bounties: [] });
 
   return {
-    data: result.data.bounties,
+    data: result.data.bounties ?? [],
     loading: result.loading,
     error: result.error,
   };
 }
-
-/* -----------------------------
-   Social Feed
------------------------------- */
-
-type SocialResponse = {
-  posts: Post[];
-};
 
 export function useSocialFeed() {
-  const result = useFetchWithFallback<SocialResponse>("/social/feed", {
-    posts: MOCK_POSTS,
-  });
+  const result = useFetch<SocialResponse>("/social/feed", { posts: [] });
 
   return {
-    data: result.data.posts,
+    data: result.data.posts ?? [],
     loading: result.loading,
     error: result.error,
   };
 }
-
-/* -----------------------------
-   Danger Agents
------------------------------- */
 
 export function useDangerAgents() {
-  const danger = MOCK_AGENTS.filter((a) => a.stage === "danger");
-
-  const result = useFetchWithFallback<AgentsResponse>(
-    "/agents/danger",
-    { agents: danger }
-  );
+  const result = useFetch<AgentsResponse>("/agents/danger", { agents: [] });
 
   return {
-    data: result.data.agents,
+    data: result.data.agents ?? [],
     loading: result.loading,
     error: result.error,
   };
 }
-
-/* -----------------------------
-   Leaderboard
------------------------------- */
-
-type LeaderboardResponse = {
-  leaderboard: Agent[];
-};
 
 export function useLeaderboard() {
-  const sorted = [...MOCK_AGENTS]
-    .filter((a) => a.stage !== "dead")
-    .sort((a, b) => b.earned - a.earned);
-
-  const result = useFetchWithFallback<LeaderboardResponse>(
-    "/agents/leaderboard",
-    { leaderboard: sorted }
-  );
+  const result = useFetch<LeaderboardResponse>("/agents/leaderboard", { leaderboard: [] });
 
   return {
-    data: result.data.leaderboard,
+    data: result.data.leaderboard ?? [],
     loading: result.loading,
     error: result.error,
   };
-}
-
-/* -----------------------------
-   B Score
------------------------------- */
-
-export interface BScore {
-  agentId: string;
-  score: number;
-  rank?: number;
 }
 
 export function useBScore(agentId: string | null) {
   const [data, setData] = useState<BScore | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(Boolean(agentId));
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
@@ -251,16 +179,29 @@ export function useBScore(agentId: string | null) {
     setLoading(true);
     setError(null);
 
-    fetchAPI<BScore>(`/bscore/${agentId}`)
-      .then((res) => {
-        if (!cancelled) setData(res);
+    fetchAPI<{
+      composite: number;
+      rank?: number;
+    }>(`/bscore/${agentId}`)
+      .then((response) => {
+        if (!cancelled) {
+          setData({
+            agentId,
+            score: response.composite,
+            rank: response.rank,
+          });
+        }
       })
       .catch((err) => {
-        if (!cancelled) setData(null);
-        if (!cancelled) setError(err);
+        if (!cancelled) {
+          setData(null);
+          setError(err instanceof Error ? err : new Error("Failed to fetch bscore"));
+        }
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       });
 
     return () => {
@@ -271,9 +212,30 @@ export function useBScore(agentId: string | null) {
   return { bscore: data, loading, error };
 }
 
-/* -----------------------------
-   Scroll Reveal (unchanged)
------------------------------- */
+export function useUserProfile() {
+  const [profile, setProfile] = useState<UserProfileSnapshot>({
+    walletAddress: null,
+    authToken: null,
+  });
+
+  useEffect(() => {
+    setProfile(getStoredProfile());
+
+    const syncProfile = () => {
+      setProfile(getStoredProfile());
+    };
+
+    window.addEventListener("storage", syncProfile);
+    window.addEventListener("focus", syncProfile);
+
+    return () => {
+      window.removeEventListener("storage", syncProfile);
+      window.removeEventListener("focus", syncProfile);
+    };
+  }, []);
+
+  return profile;
+}
 
 export function useScrollReveal<T extends HTMLElement>() {
   const ref = useRef<T>(null);
@@ -290,7 +252,7 @@ export function useScrollReveal<T extends HTMLElement>() {
           observer.unobserve(el);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     observer.observe(el);

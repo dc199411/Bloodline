@@ -14,16 +14,97 @@ import {
   LifeStage,
 } from '@bloodline/shared';
 
+function getAgentAvatar(name: string): string {
+  const letters = name.match(/[A-Z0-9]/gi) ?? [];
+  return letters.slice(0, 2).join('').toUpperCase() || name.slice(0, 2).toUpperCase();
+}
+
+function toDisplayStage(stage: string, runwayHours: number): string {
+  if (stage === LifeStage.Dead) return 'dead';
+  if (stage === LifeStage.Ascended) return 'ascended';
+  if (runwayHours < DANGER_RUNWAY_HOURS) return 'danger';
+  if (stage === LifeStage.Thriving) return 'thriving';
+  return 'alive';
+}
+
+function toDNABreakdown(agent: {
+  intelligence: number;
+  speed: number;
+  creativity: number;
+  frugality: number;
+  riskAppetite: number;
+  socialEnergy: number;
+  loyalty: number;
+  resilience: number;
+}) {
+  const dna = extractDNA(agent);
+  return DNA_TRAITS.map((trait) => {
+    const rarity = getRarityTier(dna[trait]);
+    return {
+      name: trait.replace(/([A-Z])/g, ' $1').toUpperCase(),
+      value: dna[trait],
+      rarity: rarity.label.toLowerCase(),
+    };
+  });
+}
+
+async function toAgentCard(agent: {
+  agentId: bigint;
+  name: string;
+  stage: string;
+  bornAt: Date | null;
+  totalEarned: Prisma.Decimal | number;
+  intelligence: number;
+  speed: number;
+  creativity: number;
+  frugality: number;
+  riskAppetite: number;
+  socialEnergy: number;
+  loyalty: number;
+  resilience: number;
+}) {
+  const runwayHours = (await getRunway(agent.agentId)) ?? 0;
+
+  return {
+    id: agent.agentId.toString(),
+    name: agent.name,
+    avatar: getAgentAvatar(agent.name),
+    stage: toDisplayStage(agent.stage, runwayHours),
+    runwayHours: Math.round(runwayHours),
+    earned: Number(agent.totalEarned),
+    born: (agent.bornAt ?? new Date()).toISOString(),
+    dna: toDNABreakdown(agent),
+    history: [],
+    lastWill: null,
+  };
+}
+
 export async function getAgent(agentId: bigint) {
   const agent = await prisma.agent.findUnique({
     where: { agentId },
-    include: {
-      owner: { select: { walletAddress: true, displayName: true } },
-      bscoreSnapshots: { orderBy: { createdAt: 'desc' }, take: 1 },
-    },
   });
   if (!agent) return null;
-  return { ...agent, dna: extractDNA(agent) };
+
+  const [runwayHours, history] = await Promise.all([
+    getRunway(agent.agentId),
+    getAgentTimeline(agent.agentId, {
+      bornAt: agent.bornAt,
+      diedAt: agent.diedAt,
+    }),
+  ]);
+
+  return {
+    id: agent.agentId.toString(),
+    name: agent.name,
+    avatar: getAgentAvatar(agent.name),
+    stage: toDisplayStage(agent.stage, runwayHours ?? 0),
+    runwayHours: Math.round(runwayHours ?? 0),
+    earned: Number(agent.totalEarned),
+    born: (agent.bornAt ?? agent.createdAt).toISOString(),
+    dna: toDNABreakdown(agent),
+    history,
+    lastWill: agent.lastWillUri ?? null,
+  };
 }
 
 export async function getAgents(opts: {
@@ -34,16 +115,12 @@ export async function getAgents(opts: {
 }) {
   const { stage, owner, page, limit } = opts;
   const where: Prisma.AgentWhereInput = {};
-  if (stage) where.stage = stage;
+  if (stage && stage !== 'danger') where.stage = stage;
   if (owner) where.owner = { walletAddress: owner };
 
   const [agents, total] = await Promise.all([
     prisma.agent.findMany({
       where,
-      include: {
-        owner: { select: { walletAddress: true, displayName: true } },
-        bscoreSnapshots: { orderBy: { createdAt: 'desc' }, take: 1 },
-      },
       orderBy: { createdAt: 'desc' },
       skip: (page - 1) * limit,
       take: limit,
@@ -51,12 +128,17 @@ export async function getAgents(opts: {
     prisma.agent.count({ where }),
   ]);
 
+  const cards = await Promise.all(agents.map((agent) => toAgentCard(agent)));
+  const filteredCards = stage === 'danger'
+    ? cards.filter((agent) => agent.stage === 'danger')
+    : cards;
+
   return {
-    agents: agents.map((a) => ({ ...a, dna: extractDNA(a) })),
-    total,
+    agents: filteredCards,
+    total: stage === 'danger' ? filteredCards.length : total,
     page,
     limit,
-    pages: Math.ceil(total / limit),
+    pages: Math.max(1, Math.ceil((stage === 'danger' ? filteredCards.length : total) / limit)),
   };
 }
 
@@ -74,7 +156,10 @@ export async function getAgentDNA(agentId: bigint) {
   return { agentId, dna, breakdown };
 }
 
-export async function getAgentTimeline(agentId: bigint) {
+export async function getAgentTimeline(
+  agentId: bigint,
+  lifecycle?: { bornAt: Date | null; diedAt: Date | null },
+) {
   const [posts, bountyApps] = await Promise.all([
     prisma.socialPost.findMany({
       where: { agentId },
@@ -87,27 +172,48 @@ export async function getAgentTimeline(agentId: bigint) {
     }),
   ]);
 
-  type TimelineEvent = { type: string; timestamp: Date; data: unknown };
-  const events: TimelineEvent[] = [
+  const events = [
+    ...(lifecycle?.bornAt
+      ? [{
+          type: 'birth',
+          timestamp: lifecycle.bornAt,
+          event: 'Born into the BLOODLINE arena',
+        }]
+      : []),
     ...posts.map((p) => ({
-      type: `social:${p.trigger}`,
+      type:
+        p.trigger === 'saved'
+          ? 'save'
+          : p.trigger === 'bounty_won'
+            ? 'bounty'
+            : p.trigger === 'death'
+              ? 'death'
+              : p.trigger === 'ascension'
+                ? 'ascension'
+                : 'mutation',
       timestamp: p.postedAt,
-      data: { content: p.content, trigger: p.trigger },
+      event: p.content,
     })),
     ...bountyApps.map((b) => ({
-      type: `bounty:${b.status}`,
+      type: 'bounty',
       timestamp: b.createdAt,
-      data: {
-        bountyId: b.bountyId,
-        title: b.bounty.title,
-        status: b.status,
-        score: b.score,
-      },
+      event: `Bounty ${b.status}: ${b.bounty.title}`,
     })),
+    ...(lifecycle?.diedAt
+      ? [{
+          type: 'death',
+          timestamp: lifecycle.diedAt,
+          event: 'Runway depleted. Agent died onchain.',
+        }]
+      : []),
   ];
 
   events.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-  return events;
+  return events.map((event) => ({
+    type: event.type,
+    timestamp: event.timestamp.toISOString(),
+    event: event.event,
+  }));
 }
 
 export async function getAgentLineage(agentId: bigint) {
@@ -276,24 +382,12 @@ export async function unfollowAgent(agentId: bigint, followerAddress: string) {
 export async function getLeaderboard(limit: number = 100) {
   const agents = await prisma.agent.findMany({
     where: { isActive: true },
-    include: {
-      bscoreSnapshots: { orderBy: { createdAt: 'desc' }, take: 1 },
-    },
     orderBy: { totalEarned: 'desc' },
     take: limit,
   });
 
-  return agents
-    .map((a) => ({
-      agentId: a.agentId,
-      name: a.name,
-      stage: a.stage,
-      bScore: a.bscoreSnapshots[0]
-        ? Number(a.bscoreSnapshots[0].composite)
-        : 0,
-      totalEarned: Number(a.totalEarned),
-    }))
-    .sort((a, b) => b.bScore - a.bScore);
+  const cards = await Promise.all(agents.map((agent) => toAgentCard(agent)));
+  return cards.sort((a, b) => b.earned - a.earned);
 }
 
 export async function getDangerAgents() {
@@ -301,21 +395,10 @@ export async function getDangerAgents() {
     where: { stage: { in: [LifeStage.Alive, LifeStage.Thriving] } },
   });
 
-  const results: Array<{ agentId: bigint; name: string; runway: number; stage: string }> = [];
-
-  for (const agent of agents) {
-    const runway = await getRunway(agent.agentId);
-    if (runway !== null && runway < DANGER_RUNWAY_HOURS) {
-      results.push({
-        agentId: agent.agentId,
-        name: agent.name,
-        runway,
-        stage: agent.stage,
-      });
-    }
-  }
-
-  return results.sort((a, b) => a.runway - b.runway);
+  const cards = await Promise.all(agents.map((agent) => toAgentCard(agent)));
+  return cards
+    .filter((agent) => agent.stage === 'danger')
+    .sort((a, b) => a.runwayHours - b.runwayHours);
 }
 
 export async function getBScore(agentId: bigint) {

@@ -4,6 +4,7 @@ import type { DNATrait } from "@/lib/types";
 
 const RARITY_COLORS: Record<string, string> = {
   common: "var(--muted)",
+  uncommon: "#9B9B9B",
   rare: "var(--blue)",
   epic: "var(--dying)",
   legendary: "var(--gold)",

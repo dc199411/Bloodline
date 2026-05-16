@@ -41,3 +41,5 @@ scan-report.md
 # Vercel
 .vercel
 
+# Local toolchain
+.toolchain/

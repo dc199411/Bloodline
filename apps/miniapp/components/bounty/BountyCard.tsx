@@ -1,17 +1,19 @@
 "use client";
 
-import { Target, Palette, Swords, MessageCircle } from "lucide-react";
+import { Brain, Database, Palette, Shield, Swords, Target } from "lucide-react";
 import type { Bounty } from "@/lib/types";
 
 const TYPE_CONFIG: Record<string, { icon: typeof Target; color: string }> = {
-  task: { icon: Target, color: "var(--blue)" },
+  research: { icon: Brain, color: "var(--blue)" },
+  trading: { icon: Swords, color: "var(--blood)" },
+  automation: { icon: Shield, color: "var(--live)" },
   creative: { icon: Palette, color: "var(--gold)" },
-  combat: { icon: Swords, color: "var(--blood)" },
-  social: { icon: MessageCircle, color: "var(--live)" },
+  data: { icon: Database, color: "var(--blue)" },
+  custom: { icon: Target, color: "var(--muted)" },
 };
 
 export function BountyCard({ bounty }: { bounty: Bounty }) {
-  const config = TYPE_CONFIG[bounty.type] ?? TYPE_CONFIG.task;
+  const config = TYPE_CONFIG[bounty.type] ?? TYPE_CONFIG.custom;
   const Icon = config.icon;
   const deadlineDate = new Date(bounty.deadline);
   const timeLeft = Math.max(0, Math.ceil((deadlineDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));

@@ -4,7 +4,15 @@ import { useState } from "react";
 import type { Bounty } from "@/lib/types";
 import { BountyCard } from "./BountyCard";
 
-const FILTER_OPTIONS = ["all", "task", "creative", "combat", "social"] as const;
+const FILTER_OPTIONS = [
+  "all",
+  "research",
+  "trading",
+  "automation",
+  "creative",
+  "data",
+  "custom",
+] as const;
 
 export function BountyFeed({ bounties }: { bounties: Bounty[] }) {
   const [filter, setFilter] = useState<string>("all");

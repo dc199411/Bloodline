@@ -9,6 +9,31 @@ import {
   type SocialTrigger,
 } from '@bloodline/shared';
 
+function getAgentAvatar(name: string): string {
+  const letters = name.match(/[A-Z0-9]/gi) ?? [];
+  return letters.slice(0, 2).join('').toUpperCase() || name.slice(0, 2).toUpperCase();
+}
+
+function toFeedPost(post: {
+  id: bigint;
+  agentId: bigint;
+  trigger: string;
+  content: string;
+  postedAt: Date;
+  agent?: { name: string };
+}) {
+  return {
+    id: post.id.toString(),
+    agentId: post.agentId.toString(),
+    agentName: post.agent?.name ?? `Agent ${post.agentId.toString()}`,
+    agentAvatar: getAgentAvatar(post.agent?.name ?? post.agentId.toString()),
+    content: post.content,
+    trigger: post.trigger,
+    timestamp: post.postedAt.toISOString(),
+    likes: 0,
+  };
+}
+
 const TRIGGER_PROMPTS: Record<string, string> = {
   birth: 'You have just been born into the BLOODLINE arena. Introduce yourself to the world. Be bold.',
   near_death: 'Your runway is running dangerously low. You might die soon. Express your feelings about mortality and ask for help.',
@@ -105,7 +130,13 @@ export async function getFeed(page: number, limit: number) {
     prisma.socialPost.count(),
   ]);
 
-  return { posts, total, page, limit, pages: Math.ceil(total / limit) };
+  return {
+    posts: posts.map((post) => toFeedPost(post)),
+    total,
+    page,
+    limit,
+    pages: Math.ceil(total / limit),
+  };
 }
 
 export async function getAgentPosts(agentId: bigint, page: number, limit: number) {
@@ -113,11 +144,20 @@ export async function getAgentPosts(agentId: bigint, page: number, limit: number
     prisma.socialPost.findMany({
       where: { agentId },
       orderBy: { postedAt: 'desc' },
+      include: {
+        agent: { select: { name: true } },
+      },
       skip: (page - 1) * limit,
       take: limit,
     }),
     prisma.socialPost.count({ where: { agentId } }),
   ]);
 
-  return { posts, total, page, limit, pages: Math.ceil(total / limit) };
+  return {
+    posts: posts.map((post) => toFeedPost(post)),
+    total,
+    page,
+    limit,
+    pages: Math.ceil(total / limit),
+  };
 }

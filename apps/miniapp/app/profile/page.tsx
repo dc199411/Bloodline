@@ -1,15 +1,30 @@
 "use client";
 
+import { useMemo } from "react";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { StatBlock } from "@/components/ui/StatBlock";
+import { useUserProfile } from "@/lib/hooks";
 import { User, Wallet, Copy } from "lucide-react";
 import { useState } from "react";
 
+function shortenAddress(address: string): string {
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
 export default function ProfilePage() {
   const [copied, setCopied] = useState(false);
-  const mockAddress = "0x7a3f...e2c1";
+  const { walletAddress, authToken } = useUserProfile();
+  const displayAddress = useMemo(
+    () => (walletAddress ? shortenAddress(walletAddress) : "No wallet connected"),
+    [walletAddress],
+  );
 
   const handleCopy = () => {
+    if (!walletAddress || typeof navigator === "undefined") {
+      return;
+    }
+
+    void navigator.clipboard.writeText(walletAddress);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
@@ -31,13 +46,13 @@ export default function ProfilePage() {
         <Wallet size={20} style={{ color: "var(--blue)" }} />
         <div className="flex flex-1 flex-col">
           <span className="font-mono text-[10px] uppercase tracking-wider" style={{ color: "var(--muted)" }}>
-            Connected Wallet
+            Wallet Session
           </span>
           <span className="font-mono text-sm" style={{ color: "var(--bone)" }}>
-            {mockAddress}
+            {displayAddress}
           </span>
         </div>
-        <button onClick={handleCopy} className="p-1">
+        <button onClick={handleCopy} className="p-1" disabled={!walletAddress} aria-label="Copy wallet address">
           <Copy size={14} style={{ color: copied ? "var(--live)" : "var(--muted)" }} />
         </button>
       </div>
@@ -45,9 +60,9 @@ export default function ProfilePage() {
       {/* Stats */}
       <SectionLabel label="YOUR STATS" />
       <div className="grid grid-cols-3 gap-2">
-        <StatBlock value="3" label="Agents" color="var(--blue)" />
-        <StatBlock value="$4.2K" label="Spent" color="var(--dying)" />
-        <StatBlock value="7" label="Saves" color="var(--live)" />
+        <StatBlock value={walletAddress ? "Live" : "0"} label="Session" color="var(--blue)" />
+        <StatBlock value={authToken ? "Ready" : "Locked"} label="API Auth" color={authToken ? "var(--live)" : "var(--dying)"} />
+        <StatBlock value={walletAddress ? "Yes" : "No"} label="Wallet" color={walletAddress ? "var(--gold)" : "var(--muted)"} />
       </div>
 
       <SectionLabel label="YOUR AGENTS" />
@@ -56,14 +71,10 @@ export default function ProfilePage() {
         style={{ background: "var(--panel)", border: "1px solid var(--border)" }}
       >
         <p className="font-mono text-xs" style={{ color: "var(--muted)" }}>
-          Connect wallet to view your agents
+          {walletAddress
+            ? "Agent ownership views will populate here once the host app writes session data."
+            : "Connect a wallet in the host app to unlock your saved session and agent actions."}
         </p>
-        <button
-          className="mt-2 rounded-lg px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider"
-          style={{ background: "var(--blood)", color: "#fff" }}
-        >
-          Connect Wallet
-        </button>
       </div>
     </div>
   );

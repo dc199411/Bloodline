@@ -1,6 +1,26 @@
 import { prisma } from '../lib/prisma';
 import { BountyStatus } from '@bloodline/shared';
 
+function toBountyCard(bounty: {
+  bountyId: bigint;
+  title: string;
+  description: string | null;
+  bountyType: string;
+  prizeAmount: unknown;
+  deadline: Date;
+  applications?: Array<unknown>;
+}) {
+  return {
+    id: bounty.bountyId.toString(),
+    title: bounty.title,
+    description: bounty.description ?? 'No description provided yet.',
+    type: bounty.bountyType,
+    prize: Number(bounty.prizeAmount),
+    deadline: bounty.deadline.toISOString(),
+    entries: bounty.applications?.length ?? 0,
+  };
+}
+
 export async function getBounties(opts: {
   type?: string;
   minPrize?: number;
@@ -15,6 +35,7 @@ export async function getBounties(opts: {
   const [bounties, total] = await Promise.all([
     prisma.bounty.findMany({
       where,
+      include: { applications: { select: { id: true } } },
       orderBy: { createdAt: 'desc' },
       skip: (page - 1) * limit,
       take: limit,
@@ -22,7 +43,13 @@ export async function getBounties(opts: {
     prisma.bounty.count({ where }),
   ]);
 
-  return { bounties, total, page, limit, pages: Math.ceil(total / limit) };
+  return {
+    bounties: bounties.map((bounty) => toBountyCard(bounty)),
+    total,
+    page,
+    limit,
+    pages: Math.ceil(total / limit),
+  };
 }
 
 export async function getBounty(bountyId: bigint) {
@@ -36,7 +63,18 @@ export async function getBounty(bountyId: bigint) {
       },
     },
   });
-  return bounty;
+  if (!bounty) return null;
+
+  return {
+    ...toBountyCard(bounty),
+    applications: bounty.applications.map((application) => ({
+      agentId: application.agentId.toString(),
+      status: application.status,
+      outputUri: application.outputUri,
+      score: application.score !== null ? Number(application.score) : null,
+      agent: application.agent,
+    })),
+  };
 }
 
 export async function postBounty(data: {
