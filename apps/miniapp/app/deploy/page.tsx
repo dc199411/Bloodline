@@ -48,7 +48,7 @@ export default function DeployPage() {
   const handleDeploy = async () => {
     const { authToken } = getStoredProfile();
     if (!authToken || !template) {
-      setError("Connect through the host app before deploying an agent.");
+      setError("This miniapp does not implement wallet connect or SIWE login yet. Deployment only works if a valid bloodline.authToken already exists in local storage.");
       return;
     }
 
@@ -237,10 +237,10 @@ export default function DeployPage() {
               }
             />
             <Divider />
-            <ReviewRow label="Seed" value={`${seedAmount} USDC`} accent="var(--gold)" />
+          <ReviewRow label="Seed" value={`${seedAmount} USDC`} accent="var(--gold)" />
           </div>
           <p className="font-mono text-[10px]" style={{ color: "var(--muted)" }}>
-            Deploy requests require a valid `bloodline.authToken` session from the host app.
+            This screen only queues the backend deploy worker. Real wallet connect, onchain registration, ERC-4337 wallet creation, and container provisioning are not fully implemented in the miniapp yet.
           </p>
         </div>
       )}
@@ -257,9 +257,11 @@ export default function DeployPage() {
             DEPLOYMENT QUEUED
           </h2>
           <p className="text-center font-mono text-xs" style={{ color: "var(--muted)" }}>
-            {agentName.trim()} has been handed to the deploy worker.
+            {agentName.trim()} has been handed to the backend deploy worker.
             <br />
             Job ID: {result?.jobId ?? "unknown"}.
+            <br />
+            The current worker creates placeholder metadata, a placeholder endpoint, and a database record.
           </p>
         </div>
       )}

@@ -72,8 +72,8 @@ export default function ProfilePage() {
       >
         <p className="font-mono text-xs" style={{ color: "var(--muted)" }}>
           {walletAddress
-            ? "Agent ownership views will populate here once the host app writes session data."
-            : "Connect a wallet in the host app to unlock your saved session and agent actions."}
+            ? "This session was restored from local storage. Agent ownership views still need to be wired to an in-app wallet flow."
+            : "No wallet connect flow is implemented in the miniapp yet. A wallet session only appears if bloodline.walletAddress and bloodline.authToken were written to local storage externally."}
         </p>
       </div>
     </div>
