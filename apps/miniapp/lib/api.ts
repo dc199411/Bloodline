@@ -17,16 +17,8 @@ function resolveApiBaseUrl(): string {
 
 const API_URL = resolveApiBaseUrl();
 
-type JSONValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JSONValue[]
-  | { [key: string]: JSONValue };
-
 interface APIRequestOptions extends RequestInit {
-  body?: BodyInit | JSONValue;
+  body?: BodyInit | object | null;
   token?: string | null;
 }
 
